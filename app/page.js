@@ -54,12 +54,12 @@ export default function Home() {
 
   },[debouncedSearch,booksData,search])
   return (
-    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 sm:shrink-4">
+    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 ">
       <div className="flex flex-wrap float-left gap-2">
         <Link href="/admin/addbooks" className="text-xl text-white bg-gray-500 hover:bg-gray-700 rounded-lg px-4 py-2 m-2"> Add Books </Link>
       </div>
       <div className="flex flex-wrap float-left gap-2 ">
-        <input type="text" placeholder="Search" className="w-96 sm:w-60 border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
+        <input type="text" placeholder="Search" className="w-60 lg:w-96 hover:bg-gray-200 focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
       </div>
     <div className="flex flex-wrap py-3 px-3">
       {
