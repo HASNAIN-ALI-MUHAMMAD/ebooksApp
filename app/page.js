@@ -2,33 +2,57 @@
 import Image from "next/image";
 import BookCard from "./(componets)/bookcard";
 import { useState,useEffect } from "react";
-import { booksData } from "@/public/gutenberg_books/books";
 import Link from "next/link";
 import { useDebounce } from "./(componets)/debounce";
 
 export default function Home() {
+  const [booksData,setBooksData] = useState([]);
   const [books,setBooks] = useState([]);
   const [search,setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 200);
   const [message,setMessage] = useState(null);
+  const [isLoading,setIsLoading] = useState(true);
+  
+  useEffect(()=>{
+    setIsLoading(true);
+    async function getBooks() {
+      const response = await fetch("http://localhost:3000/api/booksdata",{
+        method:'GET',
+        cache:'force-cache',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      console.log(data)
+      setBooksData(data.message);
+      setBooks(data.message)
+      setIsLoading(false)
+    }
+    getBooks();
+},[])
+
   const handlechange = (e) => {
     setSearch(e.target.value);
   }
-  useEffect(() => {
-    setBooks(booksData);
-  }, [books]);
+
   useEffect(()=>{
+    if(search.length == 0){
+      setBooks(booksData);
+      return;
+    }
     if(debouncedSearch.length > 0){
       const filteredBooks = booksData.filter((book) => {
         return book.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                 book.author.toLowerCase().includes(debouncedSearch.toLowerCase())})
       setBooks(filteredBooks);
       if(books.length == 0 && debouncedSearch.length>0){
-        return setMessage("No books found...")
+        return setMessage("No books found...");
       }
-      setMessage(null)
+      setMessage(null);
     }
-  },[debouncedSearch])
+
+  },[debouncedSearch,booksData,search])
   return (
     <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 sm:shrink-4">
       <div className="flex flex-wrap float-left gap-2">
@@ -41,11 +65,12 @@ export default function Home() {
       {
         books.map((book,index) => {
           return (
-          <BookCard key={book.id} author={book.author} title={book.title} url_pdf={book.url_pdf || ""} url={book.link || ""}>
+          <BookCard key={book._id} author={book.author} title={book.title} url={book.link} url_pdf={book.url_pdf}>
           </BookCard>
         )})
       }
       {message&& <><p className="text-center text-3xl">{message}</p></>}
+      {isLoading && <p className="text-center text-3xl">Loading...</p>}
     </div>
     </div>
   );

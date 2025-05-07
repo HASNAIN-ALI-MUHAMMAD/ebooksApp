@@ -4,17 +4,36 @@ import { useRouter } from 'next/navigation';
 import EpubReader from '@/app/(componets)/epubreader';
 
 export default function BookReaderPage({ params }) {
-    const bookid = params.bookid;
     const [file, setFile] = useState();
 
 
 
     useEffect(()=>{
-        if(!bookid) return;
-            const githubFileUrl = `https://hasnain-ali-muhammad.github.io/ebooks/epubs/${bookid}.epub`;
-            setFile(githubFileUrl); 
+        if(!params) return;
+        const fetchBook = async () => {
+            const bookid = params.bookid;
+            const response = await fetch(`/api/booksurl/`,{
+                method:'POST',
+                headers:{
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    bookid: bookid,
+                })
+
+            });
+            const data = await response.json();
+            const book = await data.data;
+            const url = book.url_epub;
+            console.log(book)
+            console.log(url)
+            setFile(url)
+
+
+        }
+        fetchBook();
       
-        },[bookid]);
+        },[params]);
 
 
     return(
