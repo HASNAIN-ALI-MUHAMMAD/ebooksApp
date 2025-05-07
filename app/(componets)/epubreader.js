@@ -30,7 +30,7 @@ const EpubReader = ({ file }) => {
 
      
         const render = book.renderTo(containerRef.current, {
-          width: "70%",
+          width: "100%",
           method:'horizontal',
           height: "100%",    
           flow:'scrolled-doc',
@@ -100,9 +100,11 @@ const EpubReader = ({ file }) => {
 
   return(
     <>
-      <div className="flex flex-row w-3/4 flex-1 space-x-6">
+      <div className="flex flex-col w-4/4 px-8 lg:flex-row flex-1 space-x-5">
+      <div ref={containerRef} className="p-5 flex flex-col items-center justify-center" style={{width:"100%", overflow:"auto",height:'95vh', border: "1px solid #ddd"  }} />
+
         {/* TOC Sidebar */}
-        <div className="w-1/4 flex flex-col space-y-5 overflow-y-scroll h-screen overflow-x-hidden ">
+        <div className="w-1/2 lg:1/3 flex flex-col space-y-5 overflow-y-scroll h-screen overflow-x-hidden ">
           <h3 className="font-bold mb-2">Table of Contents</h3>
           <ul className="text-sm space-y-1">
             {links.map((item) => (
@@ -117,19 +119,13 @@ const EpubReader = ({ file }) => {
             ))}
           </ul>
         </div>
-      <div ref={containerRef} className="p-5 flex flex-col items-center justify-center" style={{width:"100%", overflow:"auto",height:'95vh', border: "1px solid #ddd"  }} />
 
       </div>
-     <button className="text-white bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded " onClick={next}>Next page</button>
-     <button onClick={prev} className="text-white bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ">Prev page</button>
-
-     <p>
-      author: {bookInfo.author}
-      <br/>
-      title: {bookInfo.title}
-     </p>
+      <div className="flex flex-row gap-4">
+          <button className="text-white bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded " onClick={next}>Next page</button>
+          <button onClick={prev} className="text-white bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ">Prev page</button>
+      </div>
      
-
     </>
 
   )

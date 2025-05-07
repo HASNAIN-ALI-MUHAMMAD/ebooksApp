@@ -87,7 +87,7 @@ export default function Home() {
   useEffect(()=>{
     function filterPages(){
       const filteredBooks = books.filter((book,index)=>{
-        return index >= startIndex && index < endIndex;
+        return index >= startIndex && index < endIndex && book.title !== "Error"
       })
       setPagesBooks(filteredBooks);
 
@@ -97,7 +97,6 @@ export default function Home() {
   
   return (
     <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 ">
-      <p>{pagesBooks.length}</p>
       <div className="flex flex-wrap float-left gap-2">
         <Link href="/admin/addbooks" className="text-xl text-white bg-gray-500 hover:bg-gray-700 rounded-lg px-4 py-2 m-2"> Add Books </Link>
       </div>

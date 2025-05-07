@@ -2,9 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import EpubReader from '@/app/(componets)/epubreader';
+import BookInfoCard from '@/app/(componets)/bookinfocard';
+
 
 export default function BookReaderPage({ params }) {
     const [file, setFile] = useState();
+    const [bookdata,setbookdata] = useState([]);
+
 
 
 
@@ -25,6 +29,7 @@ export default function BookReaderPage({ params }) {
             const data = await response.json();
             const book = await data.data;
             const url = book.url_epub;
+            setbookdata(book)
             console.log(book)
             console.log(url)
             setFile(url)
@@ -37,10 +42,14 @@ export default function BookReaderPage({ params }) {
 
 
     return(
-        <div className='flex flex-col items-center justify-center h-full'>
-            <h1 className='text-2xl font-bold mb-4'>Book Reader</h1>
-            {file && <EpubReader file={file}/>} 
+        <div className='flex flex-col  items-center justify-center h-full'>
+            <h1 className='text-xl p-4 mb-4'>Enjoy reading!</h1>
+            {file && <EpubReader file={file}/>}
+            <div>
+                <BookInfoCard title={bookdata.title} author={bookdata.author} description={bookdata.description} imageUrl={""}/>
+            </div>
 
         </div>
+
     )
 }
