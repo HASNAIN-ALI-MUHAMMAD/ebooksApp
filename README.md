@@ -1,12 +1,7 @@
-
-
-not done:
-    pdf books 
-        need to upload onthe cloud
-    book upload 
-        file reading
-        setting up links
-    divide books into category
+Things pending:
+1.Upload pdf files to supabase.
+2.Setting up links for the supabase uploaded pdf files.
+3.Setup links and update mongodb data.
         
 
 
