@@ -9,17 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.804.0",
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
+    "@supabase/supabase-js": "^2.49.4",
     "@xmldom/xmldom": "^0.8.10",
     "clsx": "^2.1.1",
     "epubjs": "^0.3.93",
+    "fs-extra": "^11.3.0",
     "mongoose": "^8.14.1",
     "next": "15.3.1",
+    "os": "^0.1.2",
     "pdfjs": "^2.5.3",
     "pdfjs-dist": "^3.11.174",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "whatwg-url": "^14.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

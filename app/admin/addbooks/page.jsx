@@ -1,41 +1,25 @@
 'use client';
 import { useState,useEffect } from "react";
 
-
 export default function Page() {
     const [bookData,setBookData] = useState({});
-    const formFile = new FormData();
     const [file,setFile] = useState();
     const [fileError,setFileError] = useState(null);
     const [error,setError] = useState(null);
     const [message,setMessage] = useState(null);
-
+    const [isLoading,setIsLoading] = useState(false);    
 
     const handleFileChange  = (e)=>{
         setFileError(null);
-        setFile(e.target.files[0]);
-        setBookData({
-            ...bookData,
-            file:e.target.files[0]
-        })
-    }
-    useEffect(()=>{
+        const FILE = e.target.files[0];
         const allowedTypes = [ 'application/epub+zip','application/pdf'];
-        if(!file) return;
-        if(!allowedTypes.includes(file.type)){
-             setFileError("File type is not allowed.") ;
-             setFile(null);
-             setBookData({
-                ...bookData,
-                file:null
-             })
-            }
+        if(!FILE) return;
+        if(!allowedTypes.includes(FILE.type)){
+             return setFileError("File type is not allowed.") ;
+        }
         setFileError(null);
-        formFile.append("file",file);
-
-    },[file])
-    console.log(file)
-    console.log(bookData)
+        setFile(FILE);
+    }
 
     
     const handleChangeText = (e) =>{
@@ -44,24 +28,36 @@ export default function Page() {
             [e.target.name]:[e.target.value]
     })
     }
+
     const handleSubmit = async (e)=>{
+        setMessage(null)
         e.preventDefault();
-        if(!file) return setMessage("No file uploaded!");
+        setIsLoading(true);
+        const formData = new FormData();
+        formData.append("file",file);
+        for(const key in bookData){
+            formData.append(key,bookData[key])
+        }
+        try{
         const response = await fetch("/api/addbooks",{
             method:"POST",
-            body:JSON.stringify(bookData),
-            headers:{
-                "Content-Type":"application/json",
-                
-            }
+            body:formData
         })
         const data = await response.json();
         console.log(data);
+        setIsLoading(false);
+        if(data.error){
+            setError(data.error);
+        }
         if(response.ok){
             return setMessage("Book Added Successfully");
-        }else{
-            setError("Something went wrong");
         }
+
+    }
+        catch(err){
+            setError(err.message)
+        }
+        
     }
 
 
@@ -69,13 +65,13 @@ export default function Page() {
     <div className="flex flex-col items-center justify-center h-screen gap-4">
         <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-black">Add a Book</h1>
         <form onSubmit={handleSubmit}>
-            <div className="flex flex-col  mt-4 gap-1">
+            <div className="flex flex-col mt-4 gap-1 ">
                 <label htmlFor="file-upload" className="block mb-2 text-lg  text-gray-900 dark:text-black">Upload File<p className="text-red-400">(EPUB FILES OR PDF FILES)</p></label>
                 <div className="relative">
                     <input id="file-upload" onChange={handleFileChange} 
                     name="file-upload" type="file" required className="opacity-0 absolute"/>
                     <label htmlFor="file-upload"
-                        className="cursor-pointer px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        className="cursor-pointer w-1/2 text-wrap px-4 py-2 bg-gray-600 text-white text-sm  rounded-md shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     {file? `Selected: ${file.name}`:"Choose a file"}
                     </label>
                 </div>
@@ -113,6 +109,13 @@ export default function Page() {
         </form>
         {message && <p className="text-2xl text-green-300">{message}</p>}
         {error && <p className="text-2xl text-red-800">{error}</p>}
+        {isLoading && <div className="text-2xl text-center text-green-300">
+            Loading...
+            <p className="text-md text-red-300">It may take a few minutes to upload the file.</p>
+            <p className="text-md text-green-200">Please wait!</p>
+
+            </div>}
+
 
     </div>
 

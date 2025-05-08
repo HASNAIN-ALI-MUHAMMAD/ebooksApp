@@ -12,7 +12,7 @@ const EpubReader = ({ file }) => {
   const [links,setLinks] = useState([]);
 
   useEffect(() => {
-    if(!file ) return alert("Error rendering failed!");
+    if(!file ) return setError("Error rendering failed!");
     if (file && containerRef.current && !hasInitializedRef.current) {
     //Avoiding multiple renders
       hasInitializedRef.current=true;

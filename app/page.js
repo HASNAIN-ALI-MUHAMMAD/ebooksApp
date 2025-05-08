@@ -85,8 +85,9 @@ export default function Home() {
   },[debouncedSearch,booksData,search])
 
   useEffect(()=>{
+    if(!books) return;
     function filterPages(){
-      const filteredBooks = books.filter((book,index)=>{
+      const filteredBooks = books?.filter((book,index)=>{
         return index >= startIndex && index < endIndex && book.title !== "Error"
       })
       setPagesBooks(filteredBooks);
@@ -117,9 +118,9 @@ export default function Home() {
       <div>
         {
           books.length<=50? null:pages.map(page=>{
-            return <button className={clsx(
+            return <button key={page} className={clsx(
               "w-10 py-3 bg-gray-300 hover:bg-gray-100",
-              currentPage==page && "bg-red-500"
+              currentPage==page && "bg-gray-500"
             )} onClick={handlePageChange} value={page}>{page}</button>
         })}
         
