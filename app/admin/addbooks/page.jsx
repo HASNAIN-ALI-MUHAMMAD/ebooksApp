@@ -7,7 +7,8 @@ export default function Page() {
     const [fileError,setFileError] = useState(null);
     const [error,setError] = useState(null);
     const [message,setMessage] = useState(null);
-    const [isLoading,setIsLoading] = useState(false);    
+    const [isLoading,setIsLoading] = useState(false);
+    const [booksLength,setBookLength] = useState(null);
 
     const handleFileChange  = (e)=>{
         setFileError(null);
@@ -61,6 +62,16 @@ export default function Page() {
         }
         
     }
+
+    useEffect(()=>{
+        async function booksLength(){
+            const res = await fetch('/api/booksdata');
+            const data = await res.json();
+            setBookLength(data.length);
+        }
+        booksLength()
+    },[file])
+    console.log(booksLength)
 
 
   return(
