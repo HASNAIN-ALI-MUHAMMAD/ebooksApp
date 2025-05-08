@@ -11,7 +11,6 @@ export async function POST(request) {
       bookId: bookid,
     });
     const data = await books;
-    const url = data.url_epub;
     return NextResponse.json({ data: data });
   } catch (error) {
     return NextResponse.json({ error: "Error fetching data" });

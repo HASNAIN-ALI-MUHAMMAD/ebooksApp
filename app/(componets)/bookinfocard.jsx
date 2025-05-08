@@ -16,7 +16,9 @@ const BookInfoCard = ({ title, author, description, imageUrl }) => {
       {/* Book Info */}
       <div className="w-full md:w-2/3 space-y-4">
         <h2 className="text-3xl font-bold text-gray-800">{title}</h2>
-        <p className="text-lg text-gray-600 font-semibold">By {author}</p>
+        {
+            author && <p className="text-lg text-gray-600 font-semibold">By {author}</p>
+        }
         <p className="text-gray-700 text-base leading-relaxed">
           {description}
         </p>

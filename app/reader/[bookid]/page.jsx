@@ -51,7 +51,7 @@ export default function BookReaderPage({ params }) {
             {error && !isLoading ? <div className='text-red-500'>{error}</div>: <h1 className='text-xl p-4 mb-4'>Enjoy reading!</h1> }
             {(file&& !isLoading )&& <EpubReader file={file }/>}
             <div>
-                { file &&<BookInfoCard title={bookdata.title} author={bookdata.author} description={bookdata.description} imageUrl={""}/>}
+                { file &&<BookInfoCard title={bookdata.title} author={bookdata.author!="Unknown" && bookdata.author} description={bookdata.description} imageUrl={""}/>}
             </div>
 
         </div>
