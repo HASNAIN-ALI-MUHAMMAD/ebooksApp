@@ -1,12 +1,11 @@
 import Ebook from "../lib/collections/ebooks.js";
 import { connectMongo } from "../lib/monoose.js";
 import { NextResponse } from "next/server.js";
-import { writeFile } from "fs-extra";
-import { tmpdir } from "os";
 import path from "path";
-import { supabase } from "./(cloudinary)/supabase.js"
+import { supabase } from "./(supabase)/supabase.js"
 
 export async function POST(req){
+  await connectMongo();
   const body = await req.formData();
   if(!body) return NextResponse.json({error: "No data was fed!"});
   const file= body.get('file');
@@ -20,7 +19,7 @@ export async function POST(req){
 
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-  const filename = path.join('1',file.name)
+  const filename = path.join('uploads',file.name)
     const{data,error} = await supabase.storage
     .from('ebooks')
     .upload(filename,buffer,{
@@ -34,30 +33,22 @@ export async function POST(req){
     const {data:publicUrl} = supabase.storage
     .from('ebooks')
     .getPublicUrl(filename)
-    console.log("result",data);
-    return NextResponse.json({data,url:publicUrl});
+    console.log("result file upload supabase: ",data);
+    console.log(publicUrl.publicUrl)
+  const saveBook = await Ebook.create({
+    title,
+    author,
+    description,
+    url_pdf:`${publicUrl.publicUrl}`
+    });
+  try{
+    await saveBook.save();
+    console.log("done book:",saveBook);    
+  }
+  catch(err){
+    console.log(err.message)
+  }
 
-
-
-  // let {author,title,description,file} = body;
-  // author = author.toString();
-  // description = description.toString();
-  // title = title.toString();
-
-  // await connectMongo();
-  // const saveBook = await Ebook.create({
-  //   title,
-  //   author,
-  //   description,
-  // });
-  // try{
-  //   await saveBook.save();
-  //   console.log("done book:",saveBook.id);    
-  // }
-  // catch(err){
-  //   console.log(err.message)
-  // }
-
-  return NextResponse.json({message:"done"});
+  return NextResponse.json({message:"Book uploaded and saved successfully.",success:true});
 
 }

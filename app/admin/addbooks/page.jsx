@@ -30,6 +30,8 @@ export default function Page() {
     }
 
     const handleSubmit = async (e)=>{
+        setError(null)
+        setFileError(null)
         setMessage(null)
         e.preventDefault();
         setIsLoading(true);
