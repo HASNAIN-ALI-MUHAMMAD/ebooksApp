@@ -23,7 +23,7 @@ export default function PdfReader({params}) {
     },[params])
     return(
         <div>
-            <PdfBookViewer fileUrl={`/Islam_and_Secularism.pdf`} />
+            <PdfBookViewer fileUrl={"https://xbbvmxhdycfieaodzwlr.supabase.co/storage/v1/object/public/ebooks/99.pdf"} />
         </div>
     )
 

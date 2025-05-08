@@ -3,7 +3,7 @@ import { connectMongo } from "../lib/monoose.js";
 import { NextResponse } from "next/server.js";
 import path from "path";
 import { supabase } from "./(supabase)/supabase.js"
-
+import fs from "fs/promises";
 
 export async function POST(req){
   await connectMongo();
@@ -16,8 +16,8 @@ export async function POST(req){
   console.log("title",title);
   console.log("description",description);  
   console.log("author",author);  
-
-
+  const dir = 'public/pdfs'
+  
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
   const filename = path.join('uploads',file.name)
