@@ -16,7 +16,6 @@ export async function POST(req){
   console.log("title",title);
   console.log("description",description);  
   console.log("author",author);  
-  const dir = 'public/pdfs'
   
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
@@ -24,7 +23,7 @@ export async function POST(req){
     const{data,error} = await supabase.storage
     .from('ebooks')
     .upload(filename,buffer,{
-      contentType: file.type,
+      contentType: "application/pdf",
       upsert: true  
     })
     if(error){

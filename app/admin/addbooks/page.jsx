@@ -47,10 +47,13 @@ export default function Page() {
             body:formData
         })
         const data = await response.json();
-        console.log(data);
+        if(!data) return setError("Error occurred while fetching!");
         setIsLoading(false);
-        if(data.error){
-            setError(data.error);
+        console.log(data);
+        if(response.status!=200){
+            setMessage(null)
+           return setError(data);
+
         }
         if(response.ok){
             return setMessage("Book Added Successfully");
@@ -58,7 +61,10 @@ export default function Page() {
 
     }
         catch(err){
-            setError(err.message)
+            setIsLoading(false);
+            setError(err.message);
+            console.log(err.message);
+
         }
         
     }
@@ -121,7 +127,7 @@ export default function Page() {
 
         </form>
         {message && <p className="text-2xl text-green-300">{message}</p>}
-        {error && <p className="text-2xl text-red-800">{error}</p>}
+        {error && <p className="text-2xl text-center text-red-800">{error}</p>}
         {isLoading && <div className="text-2xl text-center text-green-300">
             Loading...
             <p className="text-md text-red-300">It may take a few minutes to upload the file.</p>

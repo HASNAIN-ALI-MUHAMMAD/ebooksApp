@@ -46,11 +46,12 @@ export default function Home() {
     async function getBooks() {
       const response = await fetch("http://localhost:3000/api/booksdata",{
         method:'GET',
-        cache:'force-cache',
+        // cache:'force-cache',
         headers: {
           'Content-Type': 'application/json',
         },
-      });
+        
+      },3000);
       const data = await response.json();
       console.log(data)
       setBooksData(data.message);
