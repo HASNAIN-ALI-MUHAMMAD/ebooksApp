@@ -5,6 +5,7 @@ import path from "path";
 import { supabase } from "./(supabase)/supabase.js"
 import fs from "fs/promises";
 
+
 export async function POST(req){
   await connectMongo();
   const body = await req.formData();
@@ -13,13 +14,18 @@ export async function POST(req){
   const title = body.get('title');
   const description = body.get('description');
   const author = body.get('author');
+  const bookId = body.get("bookId");
+  const link_pdf = `http://localhost:3000/pdfreader/${bookId}`
   console.log("title",title);
-  console.log("description",description);  
-  console.log("author",author);  
-  
+
+  const isBookFound = await Ebook.findOne({title: title,author:author});
+  if(isBookFound) return NextResponse.json({error: "Book already exists!"});
+
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-  const filename = path.join('uploads',file.name)
+  const filenameSplit = file.name.split(' ').join("");
+  const filename = (`uploads/${filenameSplit}`)
+  console.log("filename: ",filename);
     const{data,error} = await supabase.storage
     .from('ebooks')
     .upload(filename,buffer,{
@@ -30,15 +36,17 @@ export async function POST(req){
       console.log(error);
       return NextResponse.json({error: "Something went wrong!"});
     }
-    const {data:publicUrl} = supabase.storage
+    const{data :publicUrl} = supabase.storage
     .from('ebooks')
     .getPublicUrl(filename)
     console.log("result file upload supabase: ",data);
-    console.log(publicUrl.publicUrl)
+    console.log(publicUrl)
   const saveBook = await Ebook.create({
+    bookId,
     title,
     author,
     description,
+    link_pdf,
     url_pdf:`${publicUrl.publicUrl}`
     });
   try{

@@ -41,6 +41,7 @@ export default function Page() {
         for(const key in bookData){
             formData.append(key,bookData[key])
         }
+        formData.append('bookId',booksLength+1)
         try{
         const response = await fetch("/api/addbooks",{
             method:"POST",
@@ -50,6 +51,9 @@ export default function Page() {
         if(!data) return setError("Error occurred while fetching!");
         setIsLoading(false);
         console.log(data);
+        if(data.error){
+            return setError(data.error);
+        }
         if(response.status!=200){
             setMessage(null)
            return setError(data);

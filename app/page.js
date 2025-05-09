@@ -49,7 +49,7 @@ export default function Home() {
     async function getBooks() {
       const response = await fetch("http://localhost:3000/api/booksdata",{
         method:'GET',
-        cache:'force-cache',
+        // cache:'force-cache',
         headers: {
           'Content-Type': 'application/json',
         }
@@ -117,6 +117,7 @@ export default function Home() {
   }
   return (
     <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 " id="topofthepage">
+      {(books && !isLoading) && <p>{booksData.length+1} books found!</p>}
       {books.length>50 && <Link href={'#bottomofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100">Bottom</Link>}
 
       <div className="flex flex-wrap float-left gap-2">
@@ -129,7 +130,7 @@ export default function Home() {
       {
         pagesBooks.map((book,index) => {
           return (
-          <BookCard key={book._id} author={book.author} title={book.title} url={book.link_epub} url_pdf={book.link_pdf}>
+          <BookCard key={book._id} author={book.author} title={book.title} link_epub={book.link_epub} link_pdf={book.link_pdf}>
           </BookCard>
         )})
       }
