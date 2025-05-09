@@ -19,18 +19,21 @@ export default function Home() {
   const [currentPage,setCurrentPage] = useState(1);
   const [startIndex,setStartIndex] = useState(0);
   const [endIndex,setEndIndex] = useState(50);
+  const [error,setError]  =useState(null);
 
 
   
   
   useEffect(()=>{
-    const total = (books.length)/50;
+    const total = Math.ceil(books.length)/50;
     const arr = [];
+
     for(let i=1;i<=total+1;i++){
       arr.push(i);
-    }
+    }    
     setpages(arr)
-  },[books])
+
+  },[books,currentPage])
   console.log(pages)
   const handlePageChange = (e)=>{
     const newPage =parseInt(e.target.value)
@@ -46,12 +49,13 @@ export default function Home() {
     async function getBooks() {
       const response = await fetch("http://localhost:3000/api/booksdata",{
         method:'GET',
-        // cache:'force-cache',
+        cache:'force-cache',
         headers: {
           'Content-Type': 'application/json',
-        },
+        }
         
-      },3000);
+      });
+      if(!response.ok) return setError("Error while fetching book data.")
       const data = await response.json();
       console.log(data)
       setBooksData(data.message);
@@ -81,6 +85,7 @@ export default function Home() {
         return setMessage("No books found...");
       }
       setMessage(null);
+      return
     }
 
   },[debouncedSearch,booksData,search])
@@ -92,13 +97,28 @@ export default function Home() {
         return index >= startIndex && index < endIndex && book.title !== "Error"
       })
       setPagesBooks(filteredBooks);
-
     }
     filterPages()
-  },[books,startIndex,endIndex])
-  
+  },[books,startIndex,endIndex]);
+
+
+  useEffect(()=>{
+    if(pages.includes(currentPage)) return;
+    setCurrentPage(1);
+    setStartIndex(0);
+    setEndIndex(50);
+  },[currentPage,debouncedSearch,pages])
+  if(error){
+    return(
+      <div>
+        <p className="text-red-500 text-3xl">{error}</p>
+      </div>
+    )
+  }
   return (
-    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 ">
+    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 " id="topofthepage">
+      {books.length>50 && <Link href={'#bottomofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100">Bottom</Link>}
+
       <div className="flex flex-wrap float-left gap-2">
         <Link href="/admin/addbooks" className="text-xl text-white bg-gray-500 hover:bg-gray-700 rounded-lg px-4 py-2 m-2"> Add Books </Link>
       </div>
@@ -109,14 +129,14 @@ export default function Home() {
       {
         pagesBooks.map((book,index) => {
           return (
-          <BookCard key={book._id} author={book.author} title={book.title} url={book.link} url_pdf={book.url_pdf}>
+          <BookCard key={book._id} author={book.author} title={book.title} url={book.link_epub} url_pdf={book.link_pdf}>
           </BookCard>
         )})
       }
       {message&& <><p className="text-center text-3xl">{message}</p></>}
       {isLoading && <p className="text-center text-3xl">Loading...</p>}
     </div>
-      <div>
+      <div id="bottomofthepage">
         {
           books.length<=50? null:pages.map(page=>{
             return <button key={page} className={clsx(
@@ -127,6 +147,8 @@ export default function Home() {
         
 
       </div>
+
+        { books.length>50 &&<Link href={'#topofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100 m-2">Top</Link>}
     </div>
 
   );

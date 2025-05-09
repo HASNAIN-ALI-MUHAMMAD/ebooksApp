@@ -5,10 +5,12 @@ import BookInfoCard from "@/app/(componets)/bookinfocard";
 
 export default function PdfReader({params}) {
     const [book,setBook] = useState([]);
-    const [url,setUrl] = useState("https://xbbvmxhdycfieaodzwlr.supabase.co/storage/v1/object/public/ebooks/1.pdf")
+    const [url,setUrl] = useState();
+    const [isLoading,setIsLoading] = useState(true)
     useEffect(()=>{
         async function fetchUrl(){
             if(!params) return;
+            setIsLoading(true);
             const bookid = params.bookid;
             const res = await fetch(`/api/booksurl`,{
                 method:'POST',
@@ -16,19 +18,21 @@ export default function PdfReader({params}) {
                     'Content-Type':'application/json'
                 },
                 body:JSON.stringify({
-                    bookid
+                    bookid:bookid
                 }),
             });
             const data = await res.json();
-            setBook(data.data)
-            console.log(data);
+            setBook(data.data[0])
+            setUrl(data.data[0].url_pdf)
+            setIsLoading(false)
         }
         fetchUrl();
     },[params])
+
     return(
         <div>
-            <PdfBookViewer fileUrl={url} />
-            <BookInfoCard author={book.author!="Unknown" && book.author} title={book.title} description={book.description} imageUrl={""}/>           
+            { isLoading ? <div>Loading...</div>:<PdfBookViewer fileUrl={url} />}
+            { !isLoading && <BookInfoCard author={book.author!="Unknown" && book?.author} title={book.title} description={book.description} imageUrl={""}/>}           
         </div>
     )
 

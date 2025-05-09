@@ -7,9 +7,10 @@ const Ebook = mongoose.models.ebooksJSON || mongoose.model("ebooksJSON", new mon
     author: String,
     description: String,
     category: String,
-    link:String,
-    url_pdf:String,
+    link_epub:String,
+    link_pdf:String,
     url_epub:String,
+    url_pdf:String
 
 }, { timeStamps:true}));
 export default Ebook;

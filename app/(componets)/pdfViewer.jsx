@@ -3,6 +3,7 @@ import '../../pdfConfig'
 import {
   defaultLayoutPlugin,
 } from '@react-pdf-viewer/default-layout';
+import { ProgressBar } from '@react-pdf-viewer/core';
 import { Viewer } from '@react-pdf-viewer/core';
 import { Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -20,6 +21,8 @@ export default function PdfBookViewer({ fileUrl }) {
           fileUrl={fileUrl}
           plugins={[defaultLayoutPluginInstance]}
           style={{ width: '100%', height: '100%' }}
+          defaultScale={1}
+          enableSmoothScroll
         />
       </Worker>
     </div>

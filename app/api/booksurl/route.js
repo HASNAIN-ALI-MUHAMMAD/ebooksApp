@@ -7,7 +7,7 @@ export async function POST(request) {
   console.log(bookid);
   try {
     await connectMongo();
-    const books = await Ebook.findOne({
+    const books = await Ebook.find({
       bookId: bookid,
     });
     const data = await books;

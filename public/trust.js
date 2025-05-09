@@ -1,56 +1,55 @@
-// import { connectMongo } from "../app/api/lib/monoose.js";
-// import Ebook from "../app/api/lib/collections/ebooks.js";
-// import { booksData } from "./books.js";
+import { connectMongo } from "../app/api/lib/monoose.js";
+import Ebook from "../app/api/lib/collections/ebooks.js";
+import { booksData } from "./books.js";
+async function Trust(){
+    try{
+        await connectMongo();
+        const result = await Ebook.insertMany(booksData);
+        console.log("Data uploaded Successfully",result.length);
 
-// async function Trust(){
-//     try{
-//         await connectMongo();
-//         const result = await Ebook.insertMany(booksData);
-//         console.log("Data deleted Successfully",result.length);
+    }
+    catch(err){
+        console.log(err);
+    }
 
-//     }
-//     catch(err){
-//         console.log(err);
-//     }
+}
 
-// }
+Trust();
 
-// Trust();
-
-async function uploadFiles() {
-    try {
-      const files = await fs.readdir(dir)
-      let count =0;
-      const { data: filesFind, error2 } = await supabase.storage.from('ebooks').list("")
+// async function uploadFiles() {
+//     try {
+//       const files = await fs.readdir(dir)
+//       let count =0;
+//       const { data: filesFind, error2 } = await supabase.storage.from('ebooks').list("")
     
-      for (const file of files) {
-        const filepath = path.join(dir, file)
-        const fileBuffer = await fs.readFile(filepath)
+//       for (const file of files) {
+//         const filepath = path.join(dir, file)
+//         const fileBuffer = await fs.readFile(filepath)
         
 
-        if (filesFind?.find(f => f.name === file)) {
-            continue;
-        }
-          const { data, error } = await supabase.storage.from('ebooks').upload(file, fileBuffer, {
-              contentType: 'application/pdf',
-              upsert: true,
-          })
-          if (error) {
-            console.error(`❌ Error uploading ${file}:`, error.message)
-          } else {
-            console.log(`✅ Uploaded: ${file}`)
-          }
+//         if (filesFind?.find(f => f.name === file)) {
+//             continue;
+//         }
+//           const { data, error } = await supabase.storage.from('ebooks').upload(file, fileBuffer, {
+//               contentType: 'application/pdf',
+//               upsert: true,
+//           })
+//           if (error) {
+//             console.error(`❌ Error uploading ${file}:`, error.message)
+//           } else {
+//             console.log(`✅ Uploaded: ${file}`)
+//           }
         
-          count+=1;
+//           count+=1;
 
       
-      }
-      console.log("count",count);
+//       }
+//       console.log("count",count);
 
-      } 
-    catch (err) {
-      console.error('Unhandled error:', err.message)
-    }
-  }
+//       } 
+//     catch (err) {
+//       console.error('Unhandled error:', err.message)
+//     }
+//   }
   
-  await uploadFiles()
+//   await uploadFiles()
