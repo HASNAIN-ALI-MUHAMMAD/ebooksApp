@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { connectMongo } from "../monoose.js";
+import { connectMongo } from "../mongoose.js";
 
 const Ebook = mongoose.models.ebooksJSON || mongoose.model("ebooksJSON", new mongoose.Schema({
     bookId:String,

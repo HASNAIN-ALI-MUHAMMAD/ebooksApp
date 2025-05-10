@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectMongo } from "../lib/monoose";
+import { connectMongo } from "../lib/mongoose";
 import Ebook from "../lib/collections/ebooks";
 
 export async function GET(req, res) {

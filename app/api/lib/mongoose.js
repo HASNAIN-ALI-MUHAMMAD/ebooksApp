@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
-const MONGO_URI = "mongodb+srv://Hasnain:adminHasnain@cluster0.oxu5b.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
 let isConnected = false;
-export const connectMongo = async ()=>{
+const MONGO_URL = process.env.MONGO_URI;
+
+export const connectMongo=async ()=>{
     if(isConnected) return;
     try{
-        await mongoose.connect(MONGO_URI,{
+        await mongoose.connect(MONGO_URL,{
             dbName: "eBooksData"
         });
         isConnected = true;

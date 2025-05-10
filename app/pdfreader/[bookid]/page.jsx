@@ -2,6 +2,7 @@
 import PdfBookViewer from "@/app/(componets)/pdfViewer";
 import { useEffect, useState } from "react";
 import BookInfoCard from "@/app/(componets)/bookinfocard";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function PdfReader({params}) {
     const [book,setBook] = useState([]);
@@ -31,7 +32,7 @@ export default function PdfReader({params}) {
 
     return(
         <div>
-            { isLoading ? <div>Loading...</div>:<PdfBookViewer fileUrl={url} />}
+            { isLoading ?<div className="flex flex-col justify-center items-center mt-10 w-full h-screen"> <CircularProgress color="inherit" size={70} /></div> :<PdfBookViewer fileUrl={url} />}
             { !isLoading && <BookInfoCard author={book.author!="Unknown" && book?.author} title={book.title} description={book.description} imageUrl={""}/>}           
         </div>
     )

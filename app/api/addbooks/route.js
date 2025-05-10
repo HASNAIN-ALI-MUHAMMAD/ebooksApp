@@ -1,5 +1,5 @@
 import Ebook from "../lib/collections/ebooks.js";
-import { connectMongo } from "../lib/monoose.js";
+import { connectMongo } from "../lib/mongoose.js";
 import { NextResponse } from "next/server.js";
 import path from "path";
 import { supabase } from "./(supabase)/supabase.js"

@@ -1,11 +1,11 @@
-import { connectMongo } from "../app/api/lib/monoose.js";
+import { connectMongo } from "../app/api/lib/mongoose.js";
 import Ebook from "../app/api/lib/collections/ebooks.js";
 import { booksData } from "./books.js";
 async function Trust(){
     try{
         await connectMongo();
-        const result = await Ebook.insertMany(booksData);
-        console.log("Data uploaded Successfully",result.length);
+        // const result = await Ebook.insertMany(booksData);
+        // console.log("Data uploaded Successfully",result.length);
 
     }
     catch(err){
