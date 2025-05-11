@@ -5,6 +5,7 @@ import { useState,useEffect } from "react";
 import Link from "next/link";
 import { useDebounce } from "./(componets)/debounce";
 import clsx from "clsx";
+import Layout from "./(componets)/layout";
 
 export default function Home() {
   const [booksData,setBooksData] = useState([]);
@@ -49,7 +50,7 @@ export default function Home() {
     async function getBooks() {
       const response = await fetch("http://localhost:3000/api/booksdata",{
         method:'GET',
-        // cache:'force-cache',
+        cache:'force-cache',
         headers: {
           'Content-Type': 'application/json',
         }
@@ -117,6 +118,7 @@ export default function Home() {
   }
   return (
     <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 " id="topofthepage">
+      <Layout/>
       {(books && !isLoading) && <p>{booksData.length+1} books found!</p>}
       {books.length>50 && <Link href={'#bottomofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100">Bottom</Link>}
 

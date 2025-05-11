@@ -29,6 +29,7 @@
     "pdfjs-dist": "^3.11.174",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-toastify": "^11.0.5",
     "whatwg-url": "^14.2.0",
     "yallist": "^5.0.0"
   },

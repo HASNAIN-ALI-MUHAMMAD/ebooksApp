@@ -46,7 +46,6 @@ export const authOptions = {
               verified:true
 
             })
-            console.log("user",user);
           }
           token.accessToken = account.access_token;
           token.id = user._id.toString();
