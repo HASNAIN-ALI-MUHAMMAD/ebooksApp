@@ -1,17 +1,22 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+
 let date =new Date().toISOString();
+
 const users = new mongoose.Schema({
-    username:String,
     email:{type:String ,
         unique:true,
-        required:true},
+        required:true
+    },
     password:String,
     date: {
         type: Date,
         default:date
     },
-    provider:{type:String,required:true},
+    provider:{
+        type:String,
+        required:true
+    },
     verified:{
         type:Boolean,
         default:false
@@ -25,6 +30,7 @@ const users = new mongoose.Schema({
 
 },{timestamps:true});
 users.pre('save',async function(next){
+    if(!this.password) return;
     if(!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password,10);
     next();

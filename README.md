@@ -1,8 +1,7 @@
 Things pending:
-1.Upload pdf files to supabase.
-2.Setting up links for the supabase uploaded pdf files.
-3.Setup links and update mongodb data.
-        
 
+1.Setting up auth... email login and signup and google and github using next auth
+2.Setting up the dashboard.        
+ 
 
 

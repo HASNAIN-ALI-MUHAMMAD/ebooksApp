@@ -1,11 +1,25 @@
 "use client";
 import { useState,useEffect } from "react";
+import { signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function Login() {
   const [info,setInfo] = useState({email:"",password:""})  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+    const {data,status} = useSession();
+    console.log("data",data,"status",status)
+    if(data?.user) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen">
+                <div className="flex flex-col items-center justify-center w-1/2 bg-gray-200 rounded-md p-2 m-2">
+                    <p className="text-xl">You are logged in!</p>
+                    <p className="text-xl">Email: {data.user.email}</p>
+                    <p className="text-xl">Name: {data.user.name}</p>
+                    <button onClick={() => signOut()}>Sign Out</button>
+                </div>
+            </div>
+    )}
   return(
     <div className="flex flex-col items-center justify-center h-screen">
         <div className="flex flex-col items-center justify-center w-1/2 bg-gray-200 rounded-md p-2 m-2">
@@ -27,6 +41,10 @@ export default function Login() {
                     <button type="submit" className=" border-black rounded-md p-2 w-30 bg-gray-300 hover:bg-gray-500">Login</button>
                 </div>
             </form>
+                    <button className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500" onClick={()=>signIn("github")}>Sign in with GitHub</button>
+                    <button className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500" onClick={()=>signIn("google")}>Sign in with Google</button>
+                    <button className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500" onClick={()=>signOut()}>Sign Out</button>
+                    
         </div>
         <div>
             <p>{info.email}</p>
