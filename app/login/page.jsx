@@ -1,27 +1,45 @@
 "use client";
+import Layout from "../(componets)/layout";
 import { useState,useEffect } from "react";
 import { signIn,signOut } from "next-auth/react";
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
-import { useSession } from "next-auth/react";
+import Signout from "../(componets)/Signout";
 
 export default function Login() {
+    const [user,setUser] = useState(null);
   const [info,setInfo] = useState({email:"",code:""})  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message,setMessage] = useState(null);
   const [emailState,setemailState] = useState("invalid");
-    const {data,status} = useSession();
-    console.log("data",data,"status",status);
-    const notify = ()=>toast("Code sent.",{
-        theme:"dark",
+    useEffect(()=>{
+        async function user() {
+            const res = await fetch('/api/getUser',{
+                method:'GET',
+                credentials:'include'
+            })
+            const data = await res.json();
+            if(data.user) return setUser(data.user);
+        }
+        user();
+    },[])
+
+
+
+    const notify = (mess)=>toast(mess,{
+        theme:"light",
         transition:Zoom,
         hideProgressBar:true,
         autoClose:3000
     }
     );
-
+    useEffect(()=>{
+        if(error){
+            notify(error)
+        }
+    },[error])
 
   function isValidEmail(email) {
-        if(!email.includes('mail')) return;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
@@ -35,42 +53,59 @@ export default function Login() {
 
     const handleCode = (e)=>{
         e.preventDefault();
-        // async function sendCode(email) {
-        //     setemailState('codeLoading');
-        //     const res = await fetch("/api/auth/verify",{
-        //         method:'POST',
-        //         body:JSON.stringify({
-        //             email
-        //         })
-        //     });
-        //     const data = await res.json();
-        //     setemailState('code');
-        // }
-        // sendCode(info.email);
-        notify()
+        async function sendCode(email) {
+            const res = await fetch("/api/auth/verify",{
+                method:'POST',
+                body:JSON.stringify({
+                    email,
+                    type:"email"
+                })
+            });
+            const data = await res.json();
+            if(data.error) return setError(data.error);
+            setMessage(data.message)
+            setemailState('code');
+            notify(data.message)
+
+        }
+        sendCode(info.email);
     }
     const handleSubmit = (e)=>{
         e.preventDefault();
+        async function verify() {
+            const res = await fetch('api/auth/verify',{
+                method:'POST',
+                body:JSON.stringify({
+                    email:info.email,
+                    code:info.code,
+                    type:"code"
+            })})
+            const data = await res.json();
+            if(data.error) return setError(data.error);
+            notify(data.message)
+        }
+        verify();
     }
 
 
 
-    if(data?.user) {
+    if(user) {
         return (
             <div className="flex flex-col items-center justify-center h-screen">
+                <Layout/>
                 <div className="flex flex-col items-center justify-center w-1/2 bg-gray-200 rounded-md p-2 m-2">
                     <p className="text-xl">You are logged in!</p>
-                    <p className="text-xl">Email: {data.user.email}</p>
-                    <p className="text-xl">Name: {data.user.name}</p>
-                    <button onClick={() => signOut()}>Sign Out</button>
+                    <p className="text-xl">Email: {user.email}</p>
+                    <Signout/>
                 </div>
             </div>
     )}
   return(
     <div className="flex flex-col items-center justify-center h-screen">
         <ToastContainer/>
+                <Layout/>
         <div className="flex flex-col items-center justify-center w-1/2 bg-gray-200 rounded-md p-4">
-            <form onSubmit={handleSubmit}>
+            <form>
                 <div className="flex flex-col items-center justify-center w-1/1 bg-gray-200 rounded-md p-2">
                     <label htmlFor="email" className="w-max">Enter a valid email</label>
                     <div className="flex flex-row  text-center">
@@ -79,19 +114,23 @@ export default function Login() {
                             onChange={(e)=>setInfo({...info,email:e.target.value})} 
                             className="w-80 h-12 border-2 border-black rounded-md p-2 m-2 invalid:border-red-300 invalid:outline-none"/>
                     </div>
-                        { emailState=="valid" && <button  onClick={handleCode} className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500">Send Code</button>}
+                        { emailState=="valid" && <button  type="button" onClick={handleCode} className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500">Send Code</button>}
                     
                 </div>
-                 { emailState=="code" &&<div className="flex flex-col items-center justify-center bg-gray-200 rounded-md p-2 m-2">
-                    <label htmlFor="code" className="w-20">Enter the code sent:</label>
-                    <input type="code" required id="code" name="code" placeholder="code..."
-                    value={info.password} onChange={(e)=>setInfo({...info,code:e.target.value})}
+                 { emailState=="code" &&
+
+                 <div className="flex flex-col items-center justify-center bg-gray-200 rounded-md p-2 m-2">
+                    <label htmlFor="code" className="w-max">Enter the code sent:</label>
+                    <input type="text" required id="code" name="code" placeholder="code..."
+                    value={info.code} onChange={(e)=>setInfo({...info,code:e.target.value})}
                     className="w-80 h-12 border-2 border-black rounded-md p-2 m-2" />
-                </div>}
-                {emailState=="validCode" && 
-                <div className="flex flex-row items-center justify-center bg-gray-200 rounded-md p-2 m-2">
-                    <button type="submit" className=" border-black rounded-md p-2 w-30 bg-gray-300 hover:bg-gray-500">Login</button>
-                </div>}
+                <div className="flex flex-row items-center justify-center bg-gray-200 rounded-md p-2">
+                    <button type="button" onClick={handleSubmit} className=" border-black rounded-md p-2 w-30 bg-gray-300 hover:bg-gray-500">Submit</button>
+                </div>
+                </div>
+
+                }
+
             </form>
             <p>or</p>
             <div className="flex flex-col gap-2">

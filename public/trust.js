@@ -1,16 +1,21 @@
 import { connectMongo } from "../app/api/lib/mongoose.js";
 import Ebook from "../app/api/lib/collections/ebooks.js";
 import { booksData } from "./books.js";
+import crypto from "crypto";
+import User from "../app/api/lib/collections/User.js";
 async function Trust(){
     try{
         await connectMongo();
-        // const result = await Ebook.insertMany(booksData);
-        // console.log("Data uploaded Successfully",result.length);
+        const result = await User.deleteMany({});
+        console.log("Data uploaded Successfully",result.deletedCount);
 
     }
     catch(err){
         console.log(err);
     }
+    //     const code = crypto.randomBytes(6).toString('hex');
+    // console.log("Code is",typeof code);
+    //     return code;
 
 }
 
