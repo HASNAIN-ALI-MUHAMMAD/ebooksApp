@@ -119,14 +119,16 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 " id="topofthepage">
       <Layout/>
-      {(books && !isLoading) && <p>{booksData.length+1} books found!</p>}
+      
+      <div className="flex flex-row justify-center items-center gap-2">
       {books.length>50 && <Link href={'#bottomofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100">Bottom</Link>}
-
-      <div className="flex flex-wrap float-left gap-2">
-        <Link href="/admin/addbooks" className="text-xl text-white bg-gray-500 hover:bg-gray-700 rounded-lg px-4 py-2 m-2"> Add Books </Link>
+          <Link href="/admin/addbooks" className="text-xl text-white bg-gray-500 hover:bg-gray-700 rounded-lg px-4 py-2 m-3 "> Add Books </Link>
       </div>
-      <div className="flex flex-wrap float-left gap-2 ">
-        <input type="text" placeholder="Search" className="w-60 lg:w-96 hover:bg-gray-200 focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
+
+      <div className="flex flex-col justify-center items-center gap-2 ">
+        <input type="text" placeholder="Search books..." className="w-60 lg:w-96 hover:bg-gray-200 focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
+        {(books && !isLoading) && <p>{booksData.length+1} books found!</p>}
+
       </div>
     <div className="flex flex-wrap py-3 px-3">
       {

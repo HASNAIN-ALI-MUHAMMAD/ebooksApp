@@ -58,3 +58,27 @@ Trust();
 //   }
   
 //   await uploadFiles()
+
+
+
+
+//BULK DOWNLOAD EPUBS FROM GUTENBERG
+/*mkdir -p gutenberg_books
+for id in {1..300}; do
+  wget -nc "https://www.gutenberg.org/ebooks/$id.epub.noimages" -P gutenberg_books/
+done
+*/
+//RENAMING FILES 
+/*cd gutenberg_epubs
+for file in *.epub.noimages; do
+  mv "$file" "${file%.epub.noimages}.epub"
+done
+cd ..*/
+
+/*
+for ID in {1012..5000}; do
+  URL="https://www.gutenberg.org/ebooks/$ID.rdf"
+  wget -c -q "$URL" -O "rdf_files/$ID.rdf"
+  echo "Downloaded RDF metadata for book ID $ID"
+done
+ */
