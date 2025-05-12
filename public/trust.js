@@ -64,7 +64,7 @@ Trust();
 
 //BULK DOWNLOAD EPUBS FROM GUTENBERG
 /*mkdir -p gutenberg_books
-for id in {1..300}; do
+for id in {1696..3000}; do
   wget -nc "https://www.gutenberg.org/ebooks/$id.epub.noimages" -P gutenberg_books/
 done
 */

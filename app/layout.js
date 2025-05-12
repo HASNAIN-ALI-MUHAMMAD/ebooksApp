@@ -1,5 +1,4 @@
 import "./globals.css";
-import { SessionContext } from "next-auth/react";
 import SessionProviderWrapper from "./(componets)/SessionProvider";
 
 export const metadata = {

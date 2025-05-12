@@ -4,8 +4,9 @@ import { useState,useEffect } from "react";
 import { signIn,signOut } from "next-auth/react";
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
 import Signout from "../(componets)/Signout";
-
+import { useRouter } from "next/navigation";
 export default function Login() {
+    const router = useRouter();
     const [user,setUser] = useState(null);
   const [info,setInfo] = useState({email:"",code:""})  
   const [error, setError] = useState("");
@@ -82,7 +83,8 @@ export default function Login() {
             })})
             const data = await res.json();
             if(data.error) return setError(data.error);
-            notify(data.message)
+            notify(data.message);
+            router.push("/dashboard")
         }
         verify();
     }

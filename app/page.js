@@ -59,6 +59,11 @@ export default function Home() {
       if(!response.ok) return setError("Error while fetching book data.")
       const data = await response.json();
       console.log(data)
+      if(data.error) return setError(data.message);
+      if (!Array.isArray(data.message)) {
+        setError("Invalid book data format.");
+        return;
+      }
       setBooksData(data.message);
       setBooks(data.message)
       setIsLoading(false)
@@ -94,7 +99,7 @@ export default function Home() {
   useEffect(()=>{
     if(!books) return;
     function filterPages(){
-      const filteredBooks = books?.filter((book,index)=>{
+      const filteredBooks = books.filter((book,index)=>{
         return index >= startIndex && index < endIndex && book.title !== "Error"
       })
       setPagesBooks(filteredBooks);
@@ -111,7 +116,7 @@ export default function Home() {
   },[currentPage,debouncedSearch,pages])
   if(error){
     return(
-      <div>
+      <div className="flex felx-col justify-center items-center min-h-screen py-2 text-center">
         <p className="text-red-500 text-3xl">{error}</p>
       </div>
     )
