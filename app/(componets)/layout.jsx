@@ -13,20 +13,21 @@ export default function Layout(){
             });
             const data = await res.json();
             if(data.error) return;
-            setUser(data.message);
-            console.log("user",data.message);
+            setUser(data.user);
+            console.log("user",data);
         }
         User();
     },[])
-    {user &&
+    if(!user) return <></>;
+    return(
         <div className="flex flex-col w-full px-3">
             <Link href={'/dashboard'} className="flex flex-row items-center gap-2">
                 <Image src="/user.jpeg" alt="logo" width={30} height={30} className="rounded-full"/>
-                <p className="text-md">Hasnain</p>
+                <p className="text-md">{user.email || user.name}</p>
             </Link>
-            <div className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100 m-2">
+            <div className="w-max">
                 <Signout/>
             </div>
         </div>
-    }
+    )
 }

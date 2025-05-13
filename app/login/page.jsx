@@ -71,8 +71,11 @@ export default function Login() {
         }
         sendCode(info.email);
     }
-    const handleSubmit = (e)=>{
-        e.preventDefault();
+    const handleSubmit = ()=>{
+        setLoading(true)
+        if(!info.code) {
+            return setError("Please enter code");
+        }
         async function verify() {
             const res = await fetch('api/auth/verify',{
                 method:'POST',
@@ -84,6 +87,7 @@ export default function Login() {
             const data = await res.json();
             if(data.error) return setError(data.error);
             notify(data.message);
+            setLoading(false)
             router.push("/dashboard")
         }
         verify();
@@ -127,7 +131,7 @@ export default function Login() {
                     value={info.code} onChange={(e)=>setInfo({...info,code:e.target.value})}
                     className="w-80 h-12 border-2 border-black rounded-md p-2 m-2" />
                 <div className="flex flex-row items-center justify-center bg-gray-200 rounded-md p-2">
-                    <button type="button" onClick={handleSubmit} className=" border-black rounded-md p-2 w-30 bg-gray-300 hover:bg-gray-500">Submit</button>
+                    <button type="button" onClick={handleSubmit} className="border-black rounded-md p-2 w-30 bg-gray-300 hover:bg-gray-500">Submit</button>
                 </div>
                 </div>
 
