@@ -5,14 +5,27 @@ import { signIn,signOut } from "next-auth/react";
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
 import Signout from "../(componets)/Signout";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+
 export default function Login() {
     const router = useRouter();
+    const searchQueries = useSearchParams();
+
     const [user,setUser] = useState(null);
   const [info,setInfo] = useState({email:"",code:""})  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [message,setMessage] = useState(null);
   const [emailState,setemailState] = useState("invalid");
+
+  
+    const notify = (mess)=>toast(mess,{
+        theme:"light",
+        transition:Zoom,
+        hideProgressBar:true,
+        autoClose:3000
+    }
+    );
     useEffect(()=>{
         async function user() {
             const res = await fetch('/api/getUser',{
@@ -24,16 +37,14 @@ export default function Login() {
         }
         user();
     },[])
+    useEffect(()=>{ 
+        if(searchQueries.get('message')== 'unauth'){
+            notify("You need to login first!");
+        }
+    },[searchQueries])
 
 
 
-    const notify = (mess)=>toast(mess,{
-        theme:"light",
-        transition:Zoom,
-        hideProgressBar:true,
-        autoClose:3000
-    }
-    );
     useEffect(()=>{
         if(error){
             notify(error)
@@ -107,10 +118,13 @@ export default function Login() {
             </div>
     )}
   return(
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div className="flex flex-col h-screen w-screen">
         <ToastContainer/>
+        <div className="w-full">
                 <Layout/>
-        <div className="flex flex-col items-center justify-center w-1/2 bg-gray-200 rounded-md p-4">
+        </div>
+        <div className="w-screen h-screen flex flex-col items-center mt-10 ">
+            <div className="flex flex-col items-center justify-center bg-gray-200 w-max h-1/2 rounded-md">
             <form>
                 <div className="flex flex-col items-center justify-center w-1/1 bg-gray-200 rounded-md p-2">
                     <label htmlFor="email" className="w-max">Enter a valid email</label>
@@ -144,6 +158,8 @@ export default function Login() {
                     <button className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500" onClick={()=>signIn("google")}>Sign in with Google</button>
             </div>
          </div>
+        </div>
+        
     </div>
   )
 }

@@ -6,6 +6,9 @@ import Link from "next/link";
 import { useDebounce } from "./(componets)/debounce";
 import clsx from "clsx";
 import Layout from "./(componets)/layout";
+import { AArrowUp } from "lucide-react";
+import { AArrowDown } from "lucide-react";
+import { LinearProgress } from "@mui/material";
 
 export default function Home() {
   const [booksData,setBooksData] = useState([]);
@@ -22,8 +25,6 @@ export default function Home() {
   const [endIndex,setEndIndex] = useState(50);
   const [error,setError]  =useState(null);
 
-
-  
   
   useEffect(()=>{
     const total = Math.ceil(books.length)/50;
@@ -94,7 +95,7 @@ export default function Home() {
       return
     }
 
-  },[debouncedSearch,booksData,search])
+  },[debouncedSearch,booksData,search,books.length])
 
   useEffect(()=>{
     if(!books) return;
@@ -122,17 +123,15 @@ export default function Home() {
     )
   }
   return (
-    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen py-2 " id="topofthepage">
-      <Layout/>
-      
-      <div className="flex flex-row justify-center items-center gap-2">
-      {books.length>50 && <Link href={'#bottomofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100">Bottom</Link>}
-          <Link href="/admin/addbooks" className="text-xl text-white bg-gray-500 hover:bg-gray-700 rounded-lg px-4 py-2 m-3 "> Add Books </Link>
+    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen " id="topofthepage">
+      <div className="w-full">
+        <Layout/>
       </div>
-
-      <div className="flex flex-col justify-center items-center gap-2 ">
+      <div className="flex flex-col justify-center items-center gap-2 mt-16">
         <input type="text" placeholder="Search books..." className="w-60 lg:w-96 hover:bg-gray-200 focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
+      {books.length>50 && <Link href={'#bottomofthepage'} className="w-max text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100"><AArrowDown/></Link>}
         {(books && !isLoading) && <p>{booksData.length+1} books found!</p>}
+
 
       </div>
     <div className="flex flex-wrap py-3 px-3">
@@ -158,7 +157,7 @@ export default function Home() {
 
       </div>
 
-        { books.length>50 &&<Link href={'#topofthepage'} className="w-30 text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100 m-2">Top</Link>}
+        { books.length>50 &&<Link href={'#topofthepage'} className="w-max text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100 m-2"><AArrowUp/></Link>}
     </div>
 
   );
