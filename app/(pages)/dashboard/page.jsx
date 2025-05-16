@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link';
 import { Menu } from 'lucide-react'
-import Signout from '../(componets)/Signout'
-import Layout from '../(componets)/topbar';
+import Signout from '../../(componets)/Signout'
+import Layout from '../../(componets)/topbar';
 import Image from 'next/image';
 
 export default function Dashboard() {

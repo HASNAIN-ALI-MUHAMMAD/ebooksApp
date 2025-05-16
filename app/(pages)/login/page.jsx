@@ -1,9 +1,9 @@
 "use client";
-import Layout from "../(componets)/topbar";
+import Layout from "../../(componets)/topbar";
 import { useState,useEffect } from "react";
 import { signIn,signOut } from "next-auth/react";
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
-import Signout from "../(componets)/Signout";
+import Signout from "../../(componets)/Signout";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { CircularProgress, LinearProgress } from "@mui/material";

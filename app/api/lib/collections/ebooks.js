@@ -11,8 +11,8 @@ const Ebook = mongoose.models.ebooksJSON ?? mongoose.model("ebooksJSON", new mon
     link_pdf:String,
     url_epub:String,
     url_pdf:String,
-    bookType:String,
-    userId:String
+    userId:String,
+    status:String,
 
 }, { timeStamps:true}));
 export default Ebook;
