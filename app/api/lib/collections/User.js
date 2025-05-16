@@ -7,7 +7,12 @@ const users = new mongoose.Schema({
         unique:true,
         required:true
     },
-    password:String,
+    name:{
+        type:String
+    },
+    image:{
+        type:String
+    },
     date: {
         type: Date,
         default:date

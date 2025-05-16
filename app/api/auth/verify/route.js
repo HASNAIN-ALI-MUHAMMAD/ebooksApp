@@ -14,7 +14,16 @@ export async function POST(req) {
     console.log(type)
 
     if(type == "email"){
-        await connectMongo();
+        try{
+            let conn = await connectMongo();
+            console.log(conn)
+            if(!conn){
+                return NextResponse.json({error:"An error occurred.Probably due to your network!"})
+            }
+        }
+        catch(err){
+            return NextResponse.json({message:"An error occurred.Probably due to your network!",error:err.message})
+        }
         const ifUser =await User.findOne({email:toEmail,codeExpiry:{$gt:new Date()}}).lean();
         const userWithEmail = await User.findOne({email:toEmail});
         if(ifUser){

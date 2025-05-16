@@ -15,13 +15,14 @@ export default function Layout(){
     
     const handleLinkState = (e)=>{
         if(`http://localhost:3000${pathname}` == e.target.href) return;
+        console.log(e.target.href)
         setLinkState('loading');
         return;
       }
 
     useEffect(()=>{
         async function User() {
-            const res = await fetch("/api/getUser",{
+            const res = await fetch("/api/isLoggedIn",{
                 method:'GET',
                 credentials:'include'
             });
@@ -31,7 +32,7 @@ export default function Layout(){
             console.log("user",data);
         }
         User();
-    },[])
+    },[]);
     return(
         <div className="flex flex-col fixed top-0 left-0 w-full z-50">
             { linkState == 'loading' &&<div className="flex flex-col w-full"><LinearProgress color="inherit" className="w-full"/></div>} 
@@ -49,14 +50,14 @@ export default function Layout(){
                 </Link>
             </div>
             <div className="flex flex-col  px-3">
-                <Link href={'/admin/addbooks'} onClick={handleLinkState}  className={clsx("flex flex-row w-max items-center hover:text-gray-400",pathname=='/admin/addbooks'? "text-gray-400 hover:text-gray-900":"text-black")}>
-                    Store
+                <Link href={'/addbooks'} onClick={handleLinkState}  className={clsx("flex flex-row w-max items-center hover:text-gray-400",pathname=='/addbooks'? "text-gray-400 hover:text-gray-900":"text-black")}>
+                    Add 
                 </Link>
             </div>
             <div className="flex flex-col px-3 items-center text-center right-0 top-1 absolute">
                 <Link href={'/dashboard'} onClick={handleLinkState} className={clsx("flex flex-row items-center w-max hover:text-gray-400",pathname=='/dashboard'? "text-gray-400 hover:text-gray-900":"text-black")}>
                     <Image src="/user.jpeg" alt="logo" width={30} height={30} className="rounded-full"/>
-                    <p className="text-sm">{user.email || user.name}</p>
+                    {user}
                 </Link>
             </div>
 

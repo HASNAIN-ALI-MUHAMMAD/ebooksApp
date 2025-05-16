@@ -5,10 +5,9 @@ import { useState,useEffect } from "react";
 import Link from "next/link";
 import { useDebounce } from "./(componets)/debounce";
 import clsx from "clsx";
-import Layout from "./(componets)/layout";
+import Layout from "./(componets)/topbar";
 import { AArrowUp } from "lucide-react";
 import { AArrowDown } from "lucide-react";
-import { LinearProgress } from "@mui/material";
 
 export default function Home() {
   const [booksData,setBooksData] = useState([]);
@@ -25,7 +24,6 @@ export default function Home() {
   const [endIndex,setEndIndex] = useState(50);
   const [error,setError]  =useState(null);
 
-  
   useEffect(()=>{
     const total = Math.ceil(books.length)/50;
     const arr = [];
@@ -122,15 +120,16 @@ export default function Home() {
       </div>
     )
   }
+
   return (
     <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen " id="topofthepage">
       <div className="w-full">
         <Layout/>
       </div>
       <div className="flex flex-col justify-center items-center gap-2 mt-16">
-        <input type="text" placeholder="Search books..." className="w-60 lg:w-96 hover:bg-gray-200 focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
+        <input type="text" placeholder="Search books..." className="w-60 lg:w-96 hover:bg-gray-200 hover:transition transition focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
       {books.length>50 && <Link href={'#bottomofthepage'} className="w-max text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100"><AArrowDown/></Link>}
-        {(books && !isLoading) && <p>{booksData.length+1} books found!</p>}
+        {(books && !isLoading) && <p>{books.length} books found!</p>}
 
 
       </div>

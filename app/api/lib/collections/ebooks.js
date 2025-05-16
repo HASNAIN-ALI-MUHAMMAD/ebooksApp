@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { connectMongo } from "../mongoose.js";
 
-const Ebook = mongoose.models.ebooksJSON || mongoose.model("ebooksJSON", new mongoose.Schema({
+const Ebook = mongoose.models.ebooksJSON ?? mongoose.model("ebooksJSON", new mongoose.Schema({
     bookId:String,
     title: String,
     author: String,
@@ -10,7 +10,9 @@ const Ebook = mongoose.models.ebooksJSON || mongoose.model("ebooksJSON", new mon
     link_epub:String,
     link_pdf:String,
     url_epub:String,
-    url_pdf:String
+    url_pdf:String,
+    bookType:String,
+    userId:String
 
 }, { timeStamps:true}));
 export default Ebook;

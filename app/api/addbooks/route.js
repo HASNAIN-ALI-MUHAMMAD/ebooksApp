@@ -8,6 +8,19 @@ import fs from "fs/promises";
 
 export async function POST(req){
   await connectMongo();
+  try{
+    const reqs = await req;
+    const sessionToken = reqs.cookies._parsed?.get('next-auth.session-token')?.value;
+    const token = reqs.cookies._parsed?.get('token')?.value;
+    console.log("token",token);
+    console.log("sessionToken",sessionToken);
+    if(!token && !sessionToken) return NextResponse.json({error: "You are not logged in!"});
+  }catch(err){
+    return NextResponse.json({error: "An error occurred!"});
+  }
+
+
+
   const body = await req.formData();
   if(!body) return NextResponse.json({error: "No data was fed!"});
   const file= body.get('file');
@@ -47,7 +60,9 @@ export async function POST(req){
     author,
     description,
     link_pdf,
-    url_pdf:`${publicUrl.publicUrl}`
+    url_pdf:`${publicUrl.publicUrl}`,
+    bookType:'userSaved',
+    
     });
   try{
     await saveBook.save();

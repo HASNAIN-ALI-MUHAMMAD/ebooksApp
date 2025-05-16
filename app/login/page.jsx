@@ -1,11 +1,12 @@
 "use client";
-import Layout from "../(componets)/layout";
+import Layout from "../(componets)/topbar";
 import { useState,useEffect } from "react";
 import { signIn,signOut } from "next-auth/react";
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
 import Signout from "../(componets)/Signout";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { CircularProgress, LinearProgress } from "@mui/material";
 
 export default function Login() {
     const router = useRouter();
@@ -13,8 +14,8 @@ export default function Login() {
 
     const [user,setUser] = useState(null);
   const [info,setInfo] = useState({email:"",code:""})  
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(null);
   const [message,setMessage] = useState(null);
   const [emailState,setemailState] = useState("invalid");
 
@@ -48,6 +49,7 @@ export default function Login() {
     useEffect(()=>{
         if(error){
             notify(error)
+            setError(null)
         }
     },[error])
 
@@ -64,7 +66,6 @@ export default function Login() {
     },[info.email]);
 
     const handleCode = (e)=>{
-        e.preventDefault();
         async function sendCode(email) {
             const res = await fetch("/api/auth/verify",{
                 method:'POST',
@@ -74,11 +75,14 @@ export default function Login() {
                 })
             });
             const data = await res.json();
-            if(data.error) return setError(data.error);
+            if(data.error){
+                if(error) return;
+                return setError(data.error);
+        }
+            setError(null)
             setMessage(data.message)
             setemailState('code');
             notify(data.message)
-
         }
         sendCode(info.email);
     }
@@ -105,26 +109,15 @@ export default function Login() {
     }
 
 
-
-    if(user) {
-        return (
-            <div className="flex flex-col items-center justify-center h-screen">
-                <Layout/>
-                <div className="flex flex-col items-center justify-center w-1/2 bg-gray-200 rounded-md p-2 m-2">
-                    <p className="text-xl">You are logged in!</p>
-                    <p className="text-xl">Email: {user.email}</p>
-                    <Signout/>
-                </div>
-            </div>
-    )}
   return(
     <div className="flex flex-col h-screen w-screen">
+
         <ToastContainer/>
         <div className="w-full">
                 <Layout/>
         </div>
-        <div className="w-screen h-screen flex flex-col items-center mt-10 ">
-            <div className="flex flex-col items-center justify-center bg-gray-200 w-max h-1/2 rounded-md">
+        <div className="w-screen h-screen flex flex-col items-center mt-20 ">
+            <div className="flex flex-col items-center justify-center bg-gray-200 w-100 h-100 rounded-md">
             <form>
                 <div className="flex flex-col items-center justify-center w-1/1 bg-gray-200 rounded-md p-2">
                     <label htmlFor="email" className="w-max">Enter a valid email</label>
@@ -153,9 +146,13 @@ export default function Login() {
 
             </form>
             <p>or</p>
-            <div className="flex flex-col gap-2">
-                   <button className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500" onClick={()=>signIn("github")}>Sign in with GitHub</button>
-                    <button className=" border-black rounded-md p-2 w-max bg-gray-300 hover:bg-gray-500" onClick={()=>signIn("google")}>Sign in with Google</button>
+            <div className="flex flex-col gap-2 items-center">
+                   <button className=" border-black rounded-md p-2 w-50 text-center bg-gray-300 hover:bg-gray-500" onClick={()=>{
+                    signIn("github");
+                    setLoading('github')}}>{loading == 'github' ? <CircularProgress color="inherit" size={10}/> : "Sign in with Github"}</button>
+                    <button className=" border-black rounded-md p-2  w-50 text-center bg-gray-300 hover:bg-gray-500" onClick={()=>{
+                        signIn("google");
+                        setLoading('google')}}>{loading == 'google'? <CircularProgress color="inherit" size={10}/> : "Sign in with Google"}</button>
             </div>
          </div>
         </div>

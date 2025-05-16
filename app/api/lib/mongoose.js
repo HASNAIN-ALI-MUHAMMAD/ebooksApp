@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { NextResponse } from "next/server";
 let isConnected = false;
 const MONGO_URL = process.env.MONGO_URI;
 
@@ -9,10 +10,9 @@ export const connectMongo=async ()=>{
             dbName: "eBooksData"
         });
         isConnected = true;
-        console.log("MongoDB Connected")
-
+        return true
     }catch(err){
-       console.log("Mongoose Connection Error" +err) 
+        return false
     }
 
 }

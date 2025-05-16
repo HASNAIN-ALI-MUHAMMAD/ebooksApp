@@ -36,6 +36,8 @@ export const authOptions = {
         await connectMongo();
         let user;
         console.log("profile",profile);
+        console.log(account);
+
 
         if(account.provider) {
           user = await User.findOne({email:profile.email});
@@ -43,7 +45,9 @@ export const authOptions = {
             user = await User.create({
               email: profile.email,
               provider:account.provider,
-              verified:true
+              verified:true,
+              name:profile.name,
+              image:profile?.picture || profile.avatar_url
 
             })
           }
