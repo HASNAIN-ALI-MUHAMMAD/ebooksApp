@@ -1,5 +1,7 @@
 'use client';
 import { useState,useEffect } from "react";
+import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
+
 
 export default function Page() {
     const [bookData,setBookData] = useState({title:''});
@@ -10,13 +12,21 @@ export default function Page() {
     const [isLoading,setIsLoading] = useState(false);
     const [booksLength,setBookLength] = useState(null);
 
+    const notify = (mess,typ)=>toast(mess,{
+        theme:"light",
+        transition:Zoom,
+        hideProgressBar:true,
+        autoClose:3000,
+        type:typ
+    });
+
     const handleFileChange  = (e)=>{
         setFileError(null);
         const FILE = e.target.files[0];
         const allowedTypes = [ 'application/epub+zip','application/pdf'];
         if(!FILE) return;
         if(!allowedTypes.includes(FILE.type)){
-             return setFileError("File type is not allowed.") ;
+             return notify("File type is not allowed.",'error');
         }
         setFileError(null);
         setFile(FILE);
@@ -36,7 +46,7 @@ export default function Page() {
     console.log(bookData)
     const handleSubmit = async (e)=>{
         e.preventDefault();
-        if(!bookData.status ||  bookData.status == 'Select share status') return setError("Please select share status.")
+        if(!bookData.status ||  bookData.status == 'Select share status') return notify("Please select share status.",'error')
         setError(null)
         setFileError(null)
         setMessage(null)
@@ -53,25 +63,25 @@ export default function Page() {
             body:formData
         })
         const data = await response.json();
-        if(!data) return setError("Error occurred while fetching!");
+        if(!data) return notify("Error occurred while fetching!",'error');
         setIsLoading(false);
         console.log(data);
         if(data.error){
-            return setError(data.error);
+            return notify(data.error,'error');
         }
         if(response.status!=200){
             setMessage(null)
-           return setError(data);
+           return notify(data,'error');
 
         }
         if(response.ok){
-            return setMessage("Book Added Successfully");
+            return notify("Book Added Successfully",'success');
         }
 
     }
         catch(err){
             setIsLoading(false);
-            setError(err.message);
+            notify(err.message,'error');
             console.log(err.message);
         }
         
@@ -90,6 +100,7 @@ export default function Page() {
 
   return(
     <div className="flex flex-col items-center justify-center h-screen gap-4">
+    <ToastContainer/>
         <div className="w-160 h-176 flex flex-col items-center justify-center bg-gray-100 rounded-md">
             <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-black">Add a Book</h1>
         <form onSubmit={handleSubmit}>
@@ -129,7 +140,10 @@ export default function Page() {
                 </select>                    
             </div>
             <div className="flex flex-col  mt-4">
-                <input type="reset" placeholder="Reset" onClick={()=>setFile(null)}
+                <input type="reset" placeholder="Reset" onClick={()=>{
+                    setFile(null);
+                    setBookData({title:''});
+                }}
                  className="cursor-pointer px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" value="Reset" />
             </div>
             <div className="flex flex-col  mt-4">

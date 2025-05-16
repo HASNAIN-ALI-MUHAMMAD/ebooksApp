@@ -122,7 +122,7 @@ export async function POST(req) {
                 const token = jwt.sign(
                     {userId:user._id,email:user.email},
                     process.env.NEXTAUTH_SECRET,
-                    {expiresIn:"1h"}
+                    {expiresIn:"24h"}
                 )
                 const cookieSet =await cookies();
                 cookieSet?.set('token',token,{

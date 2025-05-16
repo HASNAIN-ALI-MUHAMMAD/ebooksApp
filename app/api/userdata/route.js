@@ -2,9 +2,12 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { cookies } from "next/headers";
 import { authOptions } from "@/auth.config";
+import jwt from "jsonwebtoken";
 
 export async function GET(req) {
-    const sessionUser = await getServerSession(authOptions)
+   try{
+        const sessionUser = await getServerSession(authOptions)
+        
         if(sessionUser){
            return NextResponse.json({ user:sessionUser.user});
         }
@@ -14,6 +17,14 @@ export async function GET(req) {
         if(token){
             return NextResponse.json({ user:data});
         }
+        return NextResponse.json({ error: "You are not logged in!"});
+   }     
+   catch(err){
+    if(err.name == "TokenExpiredError"){
+        return NextResponse.json({ error: "Token expired!"});
+    }
+    console.log(err)
+        return NextResponse.json({ error: "An error occurred!"});
+   }
 
-    return NextResponse.json({ message: "Hello World" })
 }

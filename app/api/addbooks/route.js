@@ -11,10 +11,11 @@ import { authOptions } from "@/auth.config.js";
 import jwt from "jsonwebtoken";
 
 
-const userData = async ()=>{
+export const userData = async ()=>{
     const sessionUser = await getServerSession(authOptions);
     if(sessionUser) return sessionUser?.user;
-    const token = await cookies.get('token')?.value;
+    const cookie = await cookies();
+    const token = await cookie?.get('token')?.value;
     const manData =await jwt.verify(token,process.env.NEXTAUTH_SECRET)
     return manData;
 
@@ -22,8 +23,9 @@ const userData = async ()=>{
 
 export async function POST(req){
   await connectMongo();
-    const user =await  userData();
-    const userId = user?.id;
+    const user =await userData();
+    console.log(user)
+    const userId = user?.id || user?.userId;
   try{
     const reqs = await req;
     const sessionToken = reqs.cookies._parsed?.get('next-auth.session-token')?.value;
@@ -89,7 +91,7 @@ export async function POST(req){
         description,
         bookId,
         link_pdf,
-        url_pdf: publicUrl,
+        url_pdf: publicUrl.publicUrl,
         status:status
       });
       await saveUserBook.save();

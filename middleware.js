@@ -5,6 +5,7 @@ export function middleware(req){
     const isLoggedInAuth = req.cookies.get('next-auth.session-token')?.value || req.cookies.get('__Secure-next-auth.session-token')?.value ;
     const pathname = req.nextUrl.pathname;
 
+
     if(pathname.startsWith("/dashboard") || pathname.startsWith("/addbooks") ){
         const redURL = new URL("/login",req.url);
         redURL.searchParams.set("message",'unauth')
