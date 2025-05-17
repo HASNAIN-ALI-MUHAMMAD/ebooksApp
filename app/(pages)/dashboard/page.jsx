@@ -7,6 +7,9 @@ import Signout from '../../(componets)/Signout'
 import Layout from '../../(componets)/topbar';
 import Image from 'next/image';
 import { ToastContainer,toast,Zoom } from 'react-toastify';
+import UserBookCard from '@/app/(componets)/userbookscard';
+import UserProfile from '@/app/(componets)/userProfile';
+
 
 export default function Dashboard() {
   const [user,setUser] = useState({});
@@ -28,32 +31,42 @@ export default function Dashboard() {
 
   useEffect(()=>{
     async function getUser(){
-      const user = await fetch('/api/userdata',{
+      const res = await fetch('/api/userdata',{
         method:'GET',
         headers:{
           'Content-Type':'application/json'
         },
-        credentials:'include'
+        credentials:'include',
+        cache:'force-cache',
+        revalidate:'60*5'
       }
-      ).then(res=>res.json())
+      );
+      const data = await res.json();
       setLoading(false)
-      setUserData(user.user)
-      console.log(user.user)
+      setUserData(data.user)
+      console.log(data.user)
     }
     getUser()
 },[])
-
   useEffect(()=>{
     async function getBooks(){
-      const res = await fetch('/api/userbooks');
+      const res = await fetch('/api/userbooks',{
+        method:'GET',
+        next:{revalidate:60},
+      });
       const data = await res.json();
-      if(data.error) return notify(data.error,'error')
+      if(data.error) {
+        return notify(data.error,'error')
+      }
       setLoading(false)
-      setBooks(data.userBooks)
-      console.log(data.userBooks)
+      setBooks(data.allBooks)
+      console.log(data.allBooks)
     }
+    if(mainState=='uploaded'){
     getBooks()
     console.log('books state',books)
+    }
+
   },[mainState])
 
   const handleClick = ()=>{
@@ -95,13 +108,18 @@ export default function Dashboard() {
       <div className={clsx('flex flex-col border-1 border-gray-200  mt-12 rounded-md float-right h-screen',state == "clicked" ? 'w-1/1 transition' : 'w-6/7')}>
             {
               mainState == "profile" && 
-              <div className='flex flex-col justify-center items-center h-full'>
-                <div className='flex flex-col gap-10 w-1/2'>
+              <div className='flex flex-col justify-center items-center w-full h-full'>
+                <div>
                       <h2>Profile</h2>
                       <div>
-                        {userData?.image ? <Image src={userData?.image} width={50} height={50} alt="user" /> :''}
+                        {/* {userData?.image ? <Image src={userData?.image} width={50} height={50} alt="user" /> :''}
                         <h1>Email: {userData.email}</h1>
-                        <h1>Name: {userData.name}</h1>
+                        <h1>Name: {userData.name}</h1> */}
+                        {
+                          userData && userData.email ? 
+                        <UserProfile userData={userData}/>: 'Loading...'
+
+                        }
 
                       </div>
                 </div>
@@ -115,27 +133,19 @@ export default function Dashboard() {
             }
             {
               mainState == "uploaded" &&
-                books.length == 0 ? 
-                <div className='flex flex-col justify-center items-center h-full'>
-                  <p>You haven't uploaded a book yet.</p>
-                  <p>Why not try!</p>
-                  <Link href={'/addbooks'} className='bg-gray-300 hover:bg-gray-500 p-2 rounded-lg focus:border-2 focus:border-black'>Upload books</Link>
-                </div> : 
-                <div className='flex flex-col gap-10'>
-                  <ol>
+              <div className='flex flex-col items-center gap-10 w-full h-full p-2'>
+                <h2>Uploaded books</h2>
+                <div className='flex flex-row flex-wrap  w-full p-2'>
                   {
                     books.map((book,index)=>(
-                      <li key={index} className='flex flex-col p-3 gap-5'>
-                        <h1 className='text-md'>Title:{book.title}</h1>
-                        <h1>Author:{book.author}</h1>
-                        <h1>Description:{book.description}</h1>
-                      </li>
+                        <UserBookCard key={index} book={book}/>
                     ))
                   }
-                  </ol>
 
                 </div>
-                }
+              </div>
+
+}
             
       </div>
       

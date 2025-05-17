@@ -33,6 +33,7 @@ export default function Page() {
         let filename = FILE.name.split('.');
         console.log(filename[0])
         return setBookData({
+            ...bookData,
             title:filename[0]
         })
     }

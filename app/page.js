@@ -50,6 +50,9 @@ export default function Home() {
       const response = await fetch("http://localhost:3000/api/booksdata",{
         method:'GET',
         cache:'force-cache',
+        next:{
+          revalidate:60*10
+        },
         headers: {
           'Content-Type': 'application/json',
         }

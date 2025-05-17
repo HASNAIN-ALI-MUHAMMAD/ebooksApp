@@ -7,7 +7,6 @@ Things that are completed and may need just a lookup :
 Things to be done :\
 1.The main page needs a complete ui change ...
 2.Adding books category and to improve search and filtering...and books download option and save option as well...
-
 3.User dashboard and user-uploaded books schema in mdb.
 4.Cache and state management...
 5.Middleware..,
@@ -17,12 +16,9 @@ Things to be done :\
 9.Books state like... current page reading and etc
 
 
-Over all tech stack:
-1.Primarily Next.js
-    Tailwind
-    JS
-2.MongoDB
-3.Supabase
-4.NextAuth
-5.Nodemailer for the login code emails (WILL UPDATE TO MAILTRAIN/someother FOR PRO)
-6.And some other basic ui libs(mui,toastify etc... will try more)
+
+---17 May goals:
+1.Make the complete dashboard.
+2.Do something about the storage.
+    Upload books if done
+    if not then make ui changes and add categories and pdf checks(prob not complete but lay then ground work..,)
