@@ -19,7 +19,6 @@ export default function PdfBookViewer({ fileUrl }) {
       <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
         <Viewer
           fileUrl={fileUrl}
-          plugins={[defaultLayoutPluginInstance]}
           style={{ width: '100%', height: '100%' }}
           defaultScale={1}
           enableSmoothScroll

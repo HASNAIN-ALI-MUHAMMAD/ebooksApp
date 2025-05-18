@@ -3,11 +3,11 @@ import Link from 'next/link';
 
 const BookCard = ({ title, author, link_epub,link_pdf ,children}) => {
   return (
-    <div className="bg-white bg-gray-300 p-4 rounded-lg mb-4 shadow-md w-1/1  lg:w-1/3 md:w-1/2 flex flex-col justify-center gap-2 items-center grow">
+    <div className="bg-white bg-gray-300 p-4 rounded-lg mb-4 shadow-md w-1/1 lg:w-1/3 md:w-1/2 flex flex-col justify-center gap-2 items-center grow">
  
             <>  
             {children}
-              <h2 className="text-lg font-semibold text-gray-800 mb-2 h-15 text-center">{title}</h2>
+              <h2 className="text-lg font-semibold px-3 text-gray-800 mb-2 h-15 text-center">{title}</h2>
               <p className="text-gray-600 text-sm mb-2">by {author}</p>
             { link_epub && 
               <Link

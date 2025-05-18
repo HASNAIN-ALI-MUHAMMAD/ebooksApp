@@ -125,7 +125,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col flex-wrap flex-grow justify-center items-center min-h-screen " id="topofthepage">
+    <div className="flex flex-col flex-grow justify-center items-center min-h-screen " id="topofthepage">
       <div className="w-full">
         <Layout/>
       </div>
@@ -136,7 +136,7 @@ export default function Home() {
 
 
       </div>
-    <div className="flex flex-wrap py-3 px-3">
+    <div className="flex gap-3 flex-wrap py-3 px-3">
       {
         pagesBooks.map((book,index) => {
           return (

@@ -108,7 +108,7 @@ export async function POST(req){
         description,
         bookId,
         link_pdf,
-        url_pdf: publicUrl,
+        url_pdf: publicUrl.publicUrl,
         status:status
       });
       await saveUserBook.save();
