@@ -17,8 +17,19 @@ Things to be done :\
 
 
 
----17 May goals:
+---18 May goals:
 1.Make the complete dashboard.
 2.Do something about the storage.
     Upload books if done
     if not then make ui changes and add categories and pdf checks(prob not complete but lay then ground work..,)
+
+
+the roadmap is to make an app that helps reader read with ai...
+-- upload books/files/papers in pdf format...
+-- read as pdf with ai ...
+----summary
+----questions
+----etc for free
+
+
+we will extract the pdf text and provide/feed in the context window for ais response and the usre can then just ask any questions about he book or pdf ...

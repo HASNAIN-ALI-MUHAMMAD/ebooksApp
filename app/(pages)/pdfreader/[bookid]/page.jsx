@@ -3,6 +3,9 @@ import PdfBookViewer from "@/app/(componets)/pdfViewer";
 import { useEffect, useState } from "react";
 import BookInfoCard from "@/app/(componets)/bookinfocard";
 import CircularProgress from "@mui/material/CircularProgress";
+import { BookInfoCardSkeleton } from "@/app/(componets)/bookinfocard";
+import { PDFViewerCardSkeleton } from "@/app/(componets)/pdfViewer";
+import { set } from "mongoose";
 
 export default function PdfReader({params}) {
     const [book,setBook] = useState([]);
@@ -25,15 +28,30 @@ export default function PdfReader({params}) {
             const data = await res.json();
             setBook(data.data[0])
             setUrl(data.data[0].url_pdf)
-            setIsLoading(false)
         }
         fetchUrl();
+        setIsLoading(false);    
+
     },[params])
+    if(!url){
+        return(
+            <div className="flex flex-col justify-center items-center  w-full h-screen">
+                 <CircularProgress color="inherit" size={50} />
+            </div>
+        )
+    }
 
     return(
         <div>
-            { isLoading ?<div className="flex flex-col justify-center items-center mt-10 w-full h-screen"> <CircularProgress color="inherit" size={70} /></div> :<PdfBookViewer fileUrl={url} />}
-            { !isLoading && <BookInfoCard author={book.author!="Unknown" && book?.author} title={book.title} description={book.description} imageUrl={""}/>}           
+            { isLoading ?
+            <div className="flex flex-col justify-center items-center mt-10 w-full h-screen">
+                 <CircularProgress color="inherit" size={70} />
+            </div> :
+            <PdfBookViewer fileUrl={book.url_pdf} fileId={book._id}/>
+            }
+            { isLoading ? 
+            <BookInfoCardSkeleton author={book.author!="Unknown" && book?.author} title={book.title} description={book.description} imageUrl={""}/>:
+            <BookInfoCard author={book.author!="Unknown" && book?.author} title={book.title} description={book.description} imageUrl={""}/>}           
         </div>
     )
 
