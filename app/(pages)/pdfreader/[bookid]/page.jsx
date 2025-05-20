@@ -1,11 +1,10 @@
 'use client'
-import PdfBookViewer from "@/app/(componets)/pdfViewer";
+import PdfBookViewer from "@/app/(components)/pdfViewer";
 import { useEffect, useState } from "react";
-import BookInfoCard from "@/app/(componets)/bookinfocard";
+import BookInfoCard from "@/app/(components)/bookinfocard";
 import CircularProgress from "@mui/material/CircularProgress";
-import { BookInfoCardSkeleton } from "@/app/(componets)/bookinfocard";
-import { PDFViewerCardSkeleton } from "@/app/(componets)/pdfViewer";
-import { set } from "mongoose";
+import { BookInfoCardSkeleton } from "@/app/(components)/bookinfocard";
+import { PDFViewerCardSkeleton } from "@/app/(components)/pdfViewer";
 
 export default function PdfReader({params}) {
     const [book,setBook] = useState([]);

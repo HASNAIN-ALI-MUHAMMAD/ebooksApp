@@ -3,17 +3,17 @@ import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link';
 import { Menu } from 'lucide-react'
-import Signout from '../../(componets)/Signout'
-import Layout from '../../(componets)/topbar';
+import Signout from '../../(components)/Signout'
+import Layout from '../../(components)/topbar';
 import Image from 'next/image';
 import { ToastContainer,toast,Zoom } from 'react-toastify';
-import UserBookCard from '@/app/(componets)/userbookscard';
-import UserProfile from '@/app/(componets)/userProfile';
-
+import UserBookCard from '@/app/(components)/userbookscard';
+import UserProfile from '@/app/(components)/userProfile';
+import { BookCardSkeleton } from '@/app/(components)/bookcard';
 
 export default function Dashboard() {
   const [user,setUser] = useState({});
-  const [mainState,setMainState] = useState('profile')
+  const [mainState,setMainState] = useState(localStorage.getItem('state'))
   const [state,setState] = useState('unclicked')
   const [loading,setLoading] = useState(true)
   const [error,setError] = useState(null)
@@ -30,6 +30,7 @@ export default function Dashboard() {
       );
 
   useEffect(()=>{
+    setLoading(true)
     async function getUser(){
       const res = await fetch('/api/userdata',{
         method:'GET',
@@ -49,6 +50,7 @@ export default function Dashboard() {
     getUser()
 },[])
   useEffect(()=>{
+    setLoading(true)
     async function getBooks(){
       const res = await fetch('/api/userbooks',{
         method:'GET',
@@ -63,8 +65,8 @@ export default function Dashboard() {
       console.log(data.allBooks)
     }
     if(mainState=='uploaded'){
-    getBooks()
-    console.log('books state',books)
+      getBooks()
+      console.log('books state',books)
     }
 
   },[mainState])
@@ -87,17 +89,35 @@ export default function Dashboard() {
           {
             state == "clicked" && 
             <div className={clsx(state == 'clicked' ? 'flex flex-col gap-10':'')}>
-              <Link href={'#'} onClick={()=>setMainState('profile')} className="w-full text-center rounded-md p-1 text-sm bg-gray-100 hover:bg-gray-300">Pr</Link>  
-              <Link href={'#'} onClick={()=>setMainState('uploaded')} className="w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300 text-sm">Up</Link>  
-              <Link href={'#'} onClick={()=>setMainState('saved')} className="w-full text-center p-1  rounded-md bg-gray-100 hover:bg-gray-300 text-sm">Sv</Link>
+              <Link href={'#'} onClick={()=>{
+                setMainState('profile');
+                 localStorage.setItem("state",'profile')
+                }} className="w-full text-center rounded-md p-1 text-sm bg-gray-100 hover:bg-gray-300">Pr</Link>  
+              <Link href={'#'} onClick={()=>{
+                setMainState('uploaded')
+                 localStorage.setItem("state",'uploaded')
+                }} className="w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300 text-sm">Up</Link>  
+              <Link href={'#'} onClick={()=>{
+                setMainState('saved')
+                 localStorage.setItem("state",'saved')
+                }} className="w-full text-center p-1  rounded-md bg-gray-100 hover:bg-gray-300 text-sm">Sv</Link>
 
             </div>  
           }
         </div>
         <div className={clsx('flex flex-col border-1 border-gray-100 w-1/1 transition h-screen transition gap-10',state == "clicked" ? 'hidden' : 'flex flex-col')}>
-          <Link href={'#'} onClick={()=>setMainState('profile')} className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'profile' ? 'bg-gray-300':'')}>Profile</Link>  
-          <Link href={'#'} onClick={()=>setMainState('uploaded')} className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'uploaded' ? 'bg-gray-300':'')}>Uploaded books</Link>  
-          <Link href={'#'} onClick={()=>setMainState('saved')}className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'saved' ? 'bg-gray-300':'')}>Saved books</Link>  
+          <Link href={'#'}  onClick={()=>{
+                setMainState('profile');
+                 localStorage.setItem("state",'profile')
+                }} className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'profile' ? 'bg-gray-300':'')}>Profile</Link>  
+          <Link href={'#'} onClick={()=>{
+                setMainState('uploaded')
+                 localStorage.setItem("state",'uploaded')
+                }}  className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'uploaded' ? 'bg-gray-300':'')}>Uploaded books</Link>  
+          <Link href={'#'} onClick={()=>{
+                setMainState('saved')
+                 localStorage.setItem("state",'saved')
+                }} className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'saved' ? 'bg-gray-300':'')}>Saved books</Link>  
               <div>
                 <Signout/>
               </div>
@@ -136,7 +156,13 @@ export default function Dashboard() {
               <div className='flex flex-col items-center gap-10 w-full h-full p-2'>
                 <h2>Uploaded books</h2>
                 <div className='flex flex-row flex-wrap  w-full p-2'>
-                  {
+                  { loading ? 
+                  <div className='flex flex-row flex-wrap  w-full p-2'>
+                    <BookCardSkeleton/>
+                    <BookCardSkeleton/>
+                    <BookCardSkeleton/>
+                    <BookCardSkeleton/>
+                  </div>:
                     books.map((book,index)=>(
                         <UserBookCard key={index} book={book}/>
                     ))

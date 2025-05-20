@@ -17,19 +17,21 @@ Things to be done :\
 
 
 
----18 May goals:
-1.Make the complete dashboard.
-2.Do something about the storage.
-    Upload books if done
-    if not then make ui changes and add categories and pdf checks(prob not complete but lay then ground work..,)
-
+---19 May goals:
+----- the readoingfile as pdf was done ...
+----- the questions answer part in the pdf reader remains
+----- the dashboard still needs to be fixed( a lot it looks awful)
 
 the roadmap is to make an app that helps reader read with ai...
 -- upload books/files/papers in pdf format...
--- read as pdf with ai ...
+-- read as pdf with ai
 ----summary
 ----questions
-----etc for free
+---- store the questions history with the book id...
+---- designg a books page where the user can see the books detail as well the past reads the questions asked and the answers... etc
+---- state management for the whole app...
+   ------------ohhhh its getting more and more complex-----------------
+
 
 
 we will extract the pdf text and provide/feed in the context window for ais response and the usre can then just ask any questions about he book or pdf ...

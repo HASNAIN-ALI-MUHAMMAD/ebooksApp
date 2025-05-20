@@ -1,15 +1,16 @@
 'use client'
 import '../../pdfConfig'
-import { useState,useEffect,useRef } from 'react';
+import { useState,useEffect,useRef, use } from 'react';
 import { Viewer } from '@react-pdf-viewer/core';
 import { Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import { Button, CircularProgress } from '@mui/material';
 import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
 import { zoomPlugin } from '@react-pdf-viewer/zoom';
 import { getFilePlugin } from '@react-pdf-viewer/get-file';
+import { rotatePlugin } from '@react-pdf-viewer/rotate';
 import { thumbnailPlugin } from '@react-pdf-viewer/thumbnail';
+import { Button, CircularProgress } from '@mui/material';
 import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
@@ -22,6 +23,7 @@ export default function PdfBookViewer({ fileUrl,fileId }) {
   const [lastpage,setLastPage] = useState(null);
   const notified = useRef(false);
   const [pageState,setPageState] = useState('show');
+  const [isLoggedIn,setIsLoggedIn] = useState(false);
   const notify = (mess,typ)=>toast(mess,{
           theme:"light",
           transition:Zoom,
@@ -35,6 +37,8 @@ export default function PdfBookViewer({ fileUrl,fileId }) {
   const thumbnailPluginInstance = thumbnailPlugin();
    const pageNavigationPluginInstance = pageNavigationPlugin();
   const { ZoomInButton, ZoomOutButton } = zoomPluginInstance;
+  const rotatePluginInstance = rotatePlugin();
+const { RotateForwardButton, RotateBackwardButton } = rotatePluginInstance;
   const {
     GoToNextPage,
     GoToPreviousPage,
@@ -56,9 +60,17 @@ export default function PdfBookViewer({ fileUrl,fileId }) {
         })
         });
         const { lastPage,message } = await res.json();
+        if(!lastpage && !notified.current) { 
+          notify('You are not logged in! Progress won`t be saved!','error');
+          setIsLoggedIn(false)
+          setLastPage(0)
+          setIsLoading(false)
+          return notified.current=true 
+        }
         console.log('lastPage',lastPage)
         if (!notified.current && message) {
           notify(message, 'success');
+        setIsLoggedIn(true)
           notified.current = true;
         }
         if (typeof lastPage === 'number') {
@@ -71,9 +83,10 @@ export default function PdfBookViewer({ fileUrl,fileId }) {
       }
     };
     fetchLastPage();
-  }, [pathname]);
+  }, []);
 
   const updateDbsProgress = async(page)=>{
+    if(!isLoggedIn)return;
       const res = await fetch('/api/booksprogress',{
         method:'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,10 +102,13 @@ export default function PdfBookViewer({ fileUrl,fileId }) {
   }  
 
 useEffect(() => {
+  if(isLoggedIn !== true) return;
   if (currentPage < 2) return;
 
   const timeoutId = setTimeout(() => {
-    updateDbsProgress(currentPage);
+    if(isLoggedIn===true){
+      updateDbsProgress(currentPage);
+    }
   }, 3000);
 
   return () => clearTimeout(timeoutId);
@@ -136,6 +152,11 @@ useEffect(() => {
           <div className="ml-auto">
             <DownloadButton />
           </div>
+          <div className="flex items-center gap-2">
+            <RotateBackwardButton />
+            <RotateForwardButton />
+          </div>
+
         </div>
 
         {/* PDF Viewer */}
@@ -153,7 +174,9 @@ useEffect(() => {
                 pageNavigationPluginInstance,
                 getFilePluginInstance,
                 thumbnailPluginInstance,
+                rotatePluginInstance
               ]}
+              enableSmoothScroll
               defaultScale={1.4}
             /> : <p>loading...</p>}
           </Worker>

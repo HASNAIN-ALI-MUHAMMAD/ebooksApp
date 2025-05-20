@@ -1,5 +1,5 @@
 import "./globals.css";
-import SessionProviderWrapper from "./(componets)/SessionProvider";
+import SessionProviderWrapper from "./(components)/SessionProvider";
 
 export const metadata = {
   title: "Personal eBook Collection",

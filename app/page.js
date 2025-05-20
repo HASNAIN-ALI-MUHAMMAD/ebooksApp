@@ -1,13 +1,14 @@
 'use client'
 import Image from "next/image";
-import BookCard from "./(componets)/bookcard";
+import BookCard from "./(components)/bookcard";
 import { useState,useEffect } from "react";
 import Link from "next/link";
-import { useDebounce } from "./(componets)/debounce";
+import { useDebounce } from "./(components)/debounce";
 import clsx from "clsx";
-import Layout from "./(componets)/topbar";
+import Layout from "./(components)/topbar";
 import { AArrowUp } from "lucide-react";
 import { AArrowDown } from "lucide-react";
+import { BookCardSkeleton } from "./(components)/bookcard";
 
 export default function Home() {
   const [booksData,setBooksData] = useState([]);
@@ -124,7 +125,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col flex-grow justify-center items-center min-h-screen " id="topofthepage">
+    <div className="flex flex-col flex-grow min-h-screen " id="topofthepage">
       <div className="w-full">
         <Layout/>
       </div>
@@ -136,7 +137,15 @@ export default function Home() {
 
       </div>
     <div className="flex gap-3 flex-wrap py-3 px-3">
-      {
+      {isLoading ?  <div className=" flex gap-3 w-full justify-center items-center gap-3 flex-wrap py-3 items-center px-3 flex-wrap">
+          <BookCardSkeleton/>
+          <BookCardSkeleton/>
+          <BookCardSkeleton/>
+          <BookCardSkeleton/>
+          <BookCardSkeleton/>
+          <BookCardSkeleton/>
+          <BookCardSkeleton/>
+        </div> :
         pagesBooks.map((book,index) => {
           return (
           <BookCard key={book._id} author={book.author} title={book.title} link_epub={book.link_epub} link_pdf={book.link_pdf}>
@@ -144,7 +153,6 @@ export default function Home() {
         )})
       }
       {message&& <><p className="text-center text-3xl">{message}</p></>}
-      {isLoading && <p className="text-center text-3xl">Loading...</p>}
     </div>
       <div id="bottomofthepage">
         {

@@ -1,16 +1,25 @@
 'use client';
-import { useState,useEffect } from "react";
+import { useState,useEffect,useRef } from "react";
 import { Bounce, ToastContainer,Zoom,toast } from "react-toastify";
-
+import Layout from "@/app/(components)/topbar";
+import { Brain } from "lucide-react";
+import { CircularProgress } from "@mui/material";
+import Confirm from "@/app/(components)/confirm";
 
 export default function Page() {
-    const [bookData,setBookData] = useState({title:''});
+    const [bookData,setBookData] = useState({title:'',author:'',description:'',status:''});
     const [file,setFile] = useState();
+    const inputRef = useRef(null); 
     const [fileError,setFileError] = useState(null);
     const [error,setError] = useState(null);
     const [message,setMessage] = useState(null);
-    const [isLoading,setIsLoading] = useState(false);
+    const [isLoading,setIsLoading] = useState(null);
+    const [isLoadingFile,setIsLoadingFile] = useState(false);
     const [booksLength,setBookLength] = useState(null);
+    const [pdfText,setPdfText] = useState(null);
+    const [aiRes,setAiRes] = useState({});
+    const [submitStatus,setSubmitStatus] = useState(null);
+
 
     const notify = (mess,typ)=>toast(mess,{
         theme:"light",
@@ -20,38 +29,71 @@ export default function Page() {
         type:typ
     });
 
-    const handleFileChange  = (e)=>{
-        setFileError(null);
+    async function process(fileUp){
+        const formData = new FormData();
+        formData.append("file",fileUp);
+        const res = await fetch('/api/process/pdf',{
+            method:'POST',
+            body:formData
+        })
+        const data = await res.json()
+        setPdfText(data.text)
+        console.log(data)
+        async function askAi(pdf){
+            const res = await fetch('/api/aimodels',{
+                method:'POST',
+                body:JSON.stringify({ text:pdf })
+            })
+            const data = await res.json();
+            if(data?.error) {
+                setIsLoadingFile(false);
+                console.log(data)
+                return  notify("Please enter the details manually.Unable to scan the file.",'error');
+            }
+            setAiRes(data?.data);
+            console.log(data)
+            setIsLoadingFile(false);
+        }
+        askAi(data.text)
+    }
+
+
+    const handleFileChange = (e) => {
+        setIsLoadingFile(true);
         const FILE = e.target.files[0];
         const allowedTypes = [ 'application/epub+zip','application/pdf'];
         if(!FILE) return;
         if(!allowedTypes.includes(FILE.type)){
+            setIsLoadingFile(false)
+            if (inputRef.current) inputRef.current.value = null;
              return notify("File type is not allowed.",'error');
         }
         setFileError(null);
         setFile(FILE);
         let filename = FILE.name.split('.');
-        console.log(filename[0])
-        return setBookData({
-            ...bookData,
-            title:filename[0]
-        })
+        setBookData({ ...bookData, title:filename[0] })
+        // process(FILE);
+        setIsLoadingFile(false);
     }
+
     const handleChangeText = (e) =>{
         setError(null)
-        setBookData({
-            ...bookData,
-            [e.target.name]:e.target.value
-    })
+        setBookData({ ...bookData, [e.target.name]:e.target.value })
     }
-    console.log(bookData)
     const handleSubmit = async (e)=>{
-        e.preventDefault();
-        if(!bookData.status ||  bookData.status == 'Select share status') return notify("Please select share status.",'error')
+        if(e?.preventDefault) e.preventDefault();
+        if(!file) return notify("Please select file.",'error');
+        if(!bookData.title) return notify("Please enter title.",'error')
+        if(!bookData.author) return notify("Please enter title.",'error')
+        if(!bookData.description) return notify("Please enter title.",'error')
+        if(!bookData.status ||  bookData.status == 'Select share status') return notify("Please select share status.",'error');
+        if(submitStatus != 'confirmed'){
+            return setSubmitStatus('confirming')
+        }
         setError(null)
         setFileError(null)
         setMessage(null)
-        setIsLoading(true);
+        setIsLoading('submit');
         const formData = new FormData();
         formData.append("file",file);
         for(const key in bookData){
@@ -59,35 +101,22 @@ export default function Page() {
         }
         formData.append('bookId',booksLength+1)
         try{
-        const response = await fetch("/api/addbooks",{
-            method:"POST",
-            body:formData
-        })
-        const data = await response.json();
-        if(!data) return notify("Error occurred while fetching!",'error');
-        setIsLoading(false);
-        console.log(data);
-        if(data.error){
-            return notify(data.error,'error');
+            const response = await fetch("/api/addbooks",{
+                method:"POST",
+                body:formData
+            })
+            const data = await response.json();
+            if(!data) return notify("Error occurred while fetching!",'error');
+            setIsLoading(null);
+            if(data.error){ return notify(data?.error,'error'); }
+            if(response.status!=200){ return notify(data,'error'); }
+            if(response.ok){ return notify("Book Added Successfully",'success'); }
         }
-        if(response.status!=200){
-            setMessage(null)
-           return notify(data,'error');
-
-        }
-        if(response.ok){
-            return notify("Book Added Successfully",'success');
-        }
-
-    }
         catch(err){
             setIsLoading(false);
             notify(err.message,'error');
-            console.log(err.message);
         }
-        
     }
-
     useEffect(()=>{
         async function booksLength(){
             const res = await fetch('/api/booksdata');
@@ -96,80 +125,96 @@ export default function Page() {
         }
         booksLength()
     },[file])
-    console.log(booksLength)
 
+    useEffect(()=>{
+        setBookData({
+            title:aiRes.title,
+            author:aiRes.author,
+            description:aiRes.summary,
+        })
+        return;
+    },[aiRes])
 
-  return(
-    <div className="flex flex-col items-center justify-center h-screen gap-4">
-    <ToastContainer/>
-        <div className="w-160 h-176 flex flex-col items-center justify-center bg-gray-100 rounded-md">
-            <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-black">Add a Book</h1>
-        <form onSubmit={handleSubmit}>
-            <div className="flex flex-row mt-4 gap-2 bg-gray-100 rounded-md p-2">
-                <label htmlFor="file-upload" className="block mb-2 text-lg  text-gray-900 dark:text-black">Upload File<p className="text-red-400">(EPUB FILES OR PDF FILES)</p></label>
-                <div className="relative mt-3 bg-gray-100 rounded-md">
-                    <input id="file-upload" onChange={handleFileChange} 
-                    name="file-upload" type="file" required className="opacity-0 absolute cursor-pointer overflow-hidden"/>
-                    <label htmlFor="file-upload"
-                        className=" w-50 h-15 cursor:pointer hover:bg-gray-300">
-                    {file? <p className="overflow-hidden p-2 rounded-md bg-gray-600 w-40 h-9 hover:bg-gray-300 cursor:pointer text-black">{file.name}</p>:<p className="overflow-hidden p-2 hover:bg-gray-300 cursor:pointer w-10 h-10 rounded-md bg-gray-600 w-max text-black">Choose a file...</p>}
-                    </label>
+    useEffect(() => {
+        if (submitStatus === 'confirmed') {
+            handleSubmit(new Event('submit')); // simulate submit event
+        }
+    }, [submitStatus]);
+
+    return(
+    <div className="flex flex-col items-center justify-start min-h-screen px-4 py-6 bg-gray-50">
+        <Layout/>
+        <ToastContainer/>
+        <div className="w-full max-w-4xl p-6 mt-10 bg-white shadow-md rounded-md">
+            <h1 className="text-3xl mb-6">Add a Book</h1>
+            <form className="space-y-6">
+
+                {/* File Upload */}
+                <div>
+                    <label htmlFor="file-upload" className="block text-lg font-medium text-gray-700">Upload File <span className="text-sm text-red-500">(PDF or EPUB)</span></label>
+                    <input id="file-upload" type="file" onChange={handleFileChange} ref={inputRef} className="mt-2 block w-max text-sm text-gray-900 file:bg-gray-200 file:border focus:outline-none focus:file:bg-gray-500 hover:file:bg-gray-500 file:rounded-lg file:p-2" />
+                    {file && <p className="mt-2 text-sm text-gray-600">Selected file: {file.name}</p>}
+                    {isLoadingFile && (
+                        <div className="text-sm text-gray-500 mt-2 flex items-center gap-2">
+                            <CircularProgress size={16} />
+                            <span>Scanning your file...</span>
+                        </div>
+                    )}
+                    {fileError && <p className="text-red-500 text-sm mt-1">{fileError}</p>}
                 </div>
-                {fileError && <p className="text-red-400">{fileError}</p>}
-            </div>
-            <div className="flex flex-col  mt-4">
-                <label  htmlFor="title" className="block mb-2 text-lg  text-gray-900 dark:text-black">Name of the Book</label>
-                <input onChange={handleChangeText} type="text" required name="title" value={bookData.title} placeholder="Book Name" 
-                className="w-96 border-2 border-black p-2 rounded-lg" />
-            </div>
-            <div  className="flex flex-col  mt-4">
-                <label htmlFor="author" className="block mb-2 text-lg  text-gray-900 dark:text-black">Author of the Book: </label>
-                <input type="text" onChange={handleChangeText} required name="author" placeholder="Book Name" 
-                className="w-96 border-2 border-black p-2 rounded-lg" />
-            </div>
-            <div  className="flex flex-col  mt-4">
-                <label htmlFor="description"className="block mb-2 text-lg  text-gray-900 dark:text-black">A short description of the Book</label>
-                <textarea id="description"  onChange={handleChangeText}  required name="description" rows="5" cols="50" 
-                className="border-2 border-black p-2 rounded-lg w-96" 
-                placeholder="Enter your description if any..."></textarea>
-            </div>
-            <div  className="flex flex-row gap-2 items-center p-2 gap-4"> 
-                <select  name="status" required onChange={handleChangeText} className="text-sm w-56 bg-gray-200 rounded-lg p-2 text-gray-700">
-                        <option value={null} className="text-sm font-medium">Select share status</option>
-                        <option value={'Private'}>Private</option>
-                        <option value={'Public'}>Public</option>
-                </select>                    
-            </div>
-            <div className="flex flex-col  mt-4">
-                <input type="reset" placeholder="Reset" onClick={()=>{
-                    setFile(null);
-                    setBookData({title:''});
-                }}
-                 className="cursor-pointer px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" value="Reset" />
-            </div>
-            <div className="flex flex-col  mt-4">
-                <button type="submit"
-                 className="cursor-pointer px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Upload Book
+
+                {/* Title and Author */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="title" className="block text-lg font-medium text-gray-700">Book Title</label>
+                        <input type="text" id="title" name="title" value={bookData.title} disabled={isLoadingFile} onChange={handleChangeText} className="mt-1 disabled:opacity-50 block hover:bg-gray-300 focus:bg-white w-full border border-gray-300 rounded-md p-2" placeholder="Enter book title" />
+                    </div>
+                    <div>
+                        <label htmlFor="author" className="block text-lg font-medium text-gray-700">Author</label>
+                        <input type="text" id="author" name="author" value={bookData.author} onChange={handleChangeText} disabled={isLoadingFile} className="mt-1 block disabled:opacity-50 w-full hover:bg-gray-300 focus:bg-white border border-gray-300 rounded-md p-2" placeholder="Enter author name" />
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                    <label htmlFor="description" className="block text-lg font-medium text-gray-700">Description</label>
+                    <textarea id="description" name="description" value={bookData.description}  onChange={handleChangeText} rows="5" disabled={isLoadingFile} className="mt-1 block disabled:opacity-50 hover:bg-gray-300 focus:bg-white  w-full h-40 border border-gray-300 rounded-md p-2" placeholder="A short description of the book"></textarea>
+                </div>
+
+                {/* Share Status */}
+                <div>
+                    <label htmlFor="status" className="block text-lg font-medium text-gray-700">Share Status</label>
+                    <select id="status" name="status" onChange={handleChangeText} className="mt-1 block w-full border hover:bg-gray-300  focus:bg-white border-gray-300 rounded-md p-2">
+                        <option value={null}>Select share status</option>
+                        <option value="Private">Private</option>
+                        <option value="Public">Public</option>
+                    </select>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+                    <input type="reset" onClick={() => { setFile(null); setBookData({ title: '' }); }} value="Reset" className="w-full sm:w-auto cursor-pointer px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600" />
+                    <button type="button" onClick={handleSubmit} className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                        {isLoading === 'submit' ? <CircularProgress color="inherit" size={18}/> : "Upload Book"}
                     </button>
-            </div>
+                </div>
+                {
+                    submitStatus == 'confirming' && 
+                    <Confirm text={`Do you confirm uploading the file as ${bookData.status}?`} setResponse={(res)=>{
+                        if(res){
+                        setSubmitStatus('confirmed');
+                        return
+                        }
+                    }}/>
+                }
 
+                {/* Messages */}
+                {message && <p className="text-green-600 text-sm">{message}</p>}
+                {error && <p className="text-red-600 text-sm">{error}</p>}
+                {isLoading && <div className="text-gray-600 text-sm">Uploading file... Please wait.</div>}
 
-        </form>
-        {message && <p className="text-2xl text-green-300">{message}</p>}
-        {error && <p className="text-2xl text-center text-red-800">{error}</p>}
-        {isLoading && <div className="text-2xl text-center text-green-300">
-            Loading...
-            <p className="text-md text-red-300">It may take a few minutes to upload the file.</p>
-            <p className="text-md text-green-200">Please wait!</p>
-
-            </div>}
-
+            </form>
         </div>
-        
-
-
     </div>
-
-  )
+    )
 }
