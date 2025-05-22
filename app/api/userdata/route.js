@@ -26,7 +26,6 @@ export async function GET(req) {
     if(err.name == "TokenExpiredError"){
         return NextResponse.json({ error: "Token expired!"});
     }
-    console.log(err)
         return NextResponse.json({ error: "An error occurred!"});
    }
 

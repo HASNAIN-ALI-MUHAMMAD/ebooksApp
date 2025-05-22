@@ -20,7 +20,6 @@ export async function GET(request) {
         return NextResponse.json({allBooks});
     }
     catch(err){
-        console.log(err)
         return NextResponse.json({error: "An error occurred!"});
     }   
 

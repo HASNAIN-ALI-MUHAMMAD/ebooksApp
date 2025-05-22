@@ -16,7 +16,6 @@ export async function POST(req) {
     if(type == "email"){
         try{
             let conn = await connectMongo();
-            console.log(conn)
             if(!conn){
                 return NextResponse.json({error:"An error occurred.Probably due to your network!"})
             }
@@ -64,9 +63,7 @@ export async function POST(req) {
         if(!ifUser){
             const code = crypto.randomBytes(6).toString('hex');
             const expiry = new Date(Date.now() + 10*1000*60);
-            console.log(expiry);
-            console.log(typeof expiry);
-            console.log(code)
+
             try{
                 const user = await User.create({
                 email:toEmail,
@@ -75,7 +72,6 @@ export async function POST(req) {
                 verified:false,
                 provider:'manual'
             })
-            console.log(user.toObject())   
             }
             catch(err){
                 return NextResponse.json({error:err.message});

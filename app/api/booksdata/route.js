@@ -7,7 +7,6 @@ export async function GET(req, res) {
         await connectMongo();
         let ebooks = await Ebook.find({});
         const length = await ebooks.length;
-        console.log("Length",length);
         return NextResponse.json({ message:ebooks,length,success:true})
     }
     catch(err){

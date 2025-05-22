@@ -24,7 +24,6 @@ async function  summariseAi(prompt,chunk) {
     return res.json();
     }
     catch(err){
-        console.log("error at the summarise ai func",err)
         return err
     }
     
@@ -37,7 +36,6 @@ export async function POST(req) {
         try{
             const finalSummary = await summariseAi(`write a summary of the following text provide your answer in json format as like this response:{"author":"{name of the author}","title":"{title}","summary":"{your summary}"}
                  the author and the title should be extracted from the text and the summary should not exceed 200 words text starts now:`,text);
-                 console.log(finalSummary)
             if(!finalSummary){
                 return NextResponse.json({error: "Invalid response format"})
             }
@@ -52,16 +50,13 @@ export async function POST(req) {
                 try {
                     const jsonString = match[1]; // the inner JSON text
                     const jsonData = JSON.parse(jsonString);
-                    console.log(jsonData); // { author, title, summary }
                     return NextResponse.json({data:jsonData});
                 } 
                 catch (e) {
-                    console.error("Invalid JSON format:", e.message);
                     return NextResponse.json({error: "Invalid JSON format"});
                 }
             } 
         else {
-            console.error("JSON block not found");
             return NextResponse.json({error: "JSON block not found"});
         }}
         catch(err){
@@ -83,7 +78,6 @@ export async function POST(req) {
             const res = await summariseAi(`write a summary of the following text provide
                  your answer in clear terms with refernece to the authors name and the title
                   and the summary should not exceed 200 words text starts now :`,chunk);
-            console.log(res.choices[0].message.content);
             if(!res.ok){
                 return NextResponse.json({error: res.error})
             }
@@ -106,7 +100,6 @@ export async function POST(req) {
                     return NextResponse.json({data:jsonData});
                 } 
                 catch (e) {
-                    console.error("Invalid JSON format:", e.message);
                     return NextResponse.json({error: "Invalid JSON format"});
                 }
             } 

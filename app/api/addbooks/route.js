@@ -29,29 +29,21 @@ export const userData = async ()=>{
 export async function POST(req){
   await connectMongo();
     const user =await userData();
-    console.log(user)
     const userId = user?.id || user?.userId;
-  try{
-    const reqs = await req;
-    const sessionToken = reqs.cookies._parsed?.get('next-auth.session-token')?.value;
-    const token = reqs.cookies._parsed?.get('token')?.value;
-    if(!token && !sessionToken) return NextResponse.json({error: "You are not logged in!"});
-  }catch(err){
-    return NextResponse.json({error: "An error occurred!"});
-  }
+    if(!user){
+      return NextResponse.json('You are not logged in!')
+    }
 
 
 
   const body = await req.formData();
   if(!body) return NextResponse.json({error: "No data was fed!"});
   const file= body.get('file');
-  console.log(body)
   const title = body.get('title');
   const description = body.get('description');
   const author = body.get('author');
   const bookId = body.get("bookId");
   const status = body.get("status");
-  console.log(status)
   const link_pdf = `https://ebooks-app-mu.vercel.app/pdfreader/${bookId}`;
   await connectMongo();
   const privateBook = await books.findOne({
@@ -59,7 +51,6 @@ export async function POST(req){
     author:author,
     userId:userId
   });
-  console.log(privateBook)
   const publicBook = await Ebook.findOne({
     title: title,
     author:author,
@@ -71,7 +62,6 @@ export async function POST(req){
   const buffer = Buffer.from(bytes);
   const filenameSplit = file.name.split(' ').join("");
   const filename = (`uploads/${filenameSplit}`)
-  console.log("filename: ",filename);
     const{data,error} = await supabase.storage
     .from('ebooks')
     .upload(filename,buffer,{
@@ -79,14 +69,11 @@ export async function POST(req){
       upsert: true  
     })
     if(error){
-      console.log(error);
       return NextResponse.json({error: "Something went wrong!"});
     }
     const{data :publicUrl} = supabase.storage
     .from('ebooks')
     .getPublicUrl(filename)
-    console.log("result file upload supabase: ",data);
-    console.log(publicUrl)
   if(status =='Private'){
     try{
       const saveUserBook = await books.create({
@@ -101,7 +88,7 @@ export async function POST(req){
       });
       await saveUserBook.save();
   }catch(err){
-    return console.log(err)
+    return err
   }
   }
   else if(status == 'Public'){
@@ -119,7 +106,7 @@ export async function POST(req){
       await saveUserBook.save();
     }
     catch(err){
-      return console.log(err)
+      return err
     }
   }
 
