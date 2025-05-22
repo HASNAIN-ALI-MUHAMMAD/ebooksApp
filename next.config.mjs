@@ -1,5 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    reactStrictMode:true,
+     webpack: (config, { isServer }) => {
+    if (isServer) {
+      if (!config.externals) {
+        config.externals = [];
+      }
+      config.externals.push('pdfjs-dist');
+    }
+    return config;
+  },
     images:{
         remotePatterns:[
             {

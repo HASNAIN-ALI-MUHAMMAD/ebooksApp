@@ -28,9 +28,6 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('PDF processing error in API route:', error);
-    if (error.message && error.message.includes("Cannot find module './pdf.worker.js'")) {
-        console.error("This indicates an issue with pdfjs-dist's internal worker loading in Node.js. Ensure you're using the main 'pdfjs-dist' import.");
-    }
     return Response.json({ 
       error: 'Failed to process PDF.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,

@@ -286,9 +286,7 @@ export default function AddBookPage() {
                             <Confirm
                                 title="Confirm Upload"
                                 text={`Are you sure you want to upload "${bookData.title || 'this book'}" as ${bookData.status?.toLowerCase()}?`}
-                                confirmText="Yes, Upload"
-                                cancelText="Cancel"
-                                onResponse={(res) => {
+                                setResponse={(res) => {
                                     setSubmitStatus(res ? 'confirmed' : null);
                                 }}
                             />
