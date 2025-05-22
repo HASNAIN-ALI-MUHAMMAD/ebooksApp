@@ -1,13 +1,4 @@
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
-
-// REMOVED: The explicit GlobalWorkerOptions.workerSrc setting for Node.js
-// if (typeof window === 'undefined') {
-// try {
-// pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.js');
-// } catch (error) {
-// console.error("Failed to resolve pdf.worker.js for pdfjs-dist. PDF processing may be impaired.", error);
-// }
-// }
+import * as pdfjsLib from 'pdfjs-dist';
 
 export const runtime = 'nodejs';
 
@@ -37,9 +28,8 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('PDF processing error in API route:', error);
-    // Check if the error is the specific "endsWith" issue to provide a more targeted message if needed
-    if (error.message && error.message.includes("e.endsWith is not a function")) {
-        console.error("This might be an issue with PDF.js fake worker initialization in Node.js.");
+    if (error.message && error.message.includes("Cannot find module './pdf.worker.js'")) {
+        console.error("This indicates an issue with pdfjs-dist's internal worker loading in Node.js. Ensure you're using the main 'pdfjs-dist' import.");
     }
     return Response.json({ 
       error: 'Failed to process PDF.',
