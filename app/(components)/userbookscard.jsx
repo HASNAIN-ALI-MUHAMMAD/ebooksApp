@@ -1,45 +1,44 @@
+'use client'
+import { useState } from "react";
 import React from "react";
 import { BookOpen, Lock, Globe } from "lucide-react";
+import Link from "next/link";
+import { LinearProgress } from "@mui/material";
 
 const UserBookCard = ({ book }) => {
+  const [loading,setloading] = useState(null)
   const {
     title,
     author,
     description,
     status,
     createdAt,
+    link_pdf
   } = book;
-    let titles = title.split("_").join(" ");
-
+  const date = new Date(createdAt)
   const isPublic = status === "Public";
 
   return (
-    <div className="dark:bg-gray-700 w-1/2 shadow-md rounded-2xl p-4 transition hover:shadow-xl border border-gray-200">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xl font-semibold text-wrap text-gray-800 dark:text-white">{titles}</h2>
+    <div className="dark:bg-gray-100 w-1/1 items-center min-h-25 h-full cursor-pointer shadow-md text-black p-4 transition hover:shadow-xl border border-gray-200">
+      {loading && <LinearProgress color="inherit" className="w-full mb-2"/>}
+      <Link href={link_pdf} onClick={()=>setloading(true)} className="flex items-center justify-between mb-2">
+        <h2 className="text-xl font-semibold text-wrap text-gray-700">{title}</h2>
         {isPublic ? (
-          <Globe className="w-5 h-5 text-green-500" title="Public" />
+          <Globe className="w-5 h-5 text-gray-600" title="Public" />
         ) : (
-          <Lock className="w-5 h-5 text-red-500" title="Private" />
+          <Lock className="w-5 h-5 text-gray-900" title="Private" />
         )}
-      </div>
+      </Link>
       
       {author && (
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+        <p className="text-sm text-gray-600 mb-1">
           <span className="font-medium">Author:</span> {author}
         </p>
       )}
-
-      {description && (
-        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 line-clamp-3">
-          {description}
-        </p>
-      )}
-
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-between text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <BookOpen className="w-4 h-4" />
-          Uploaded: {new Date(createdAt).toLocaleDateString()}
+          Uploaded: {date.toUTCString()}
         </span>
         <span className="capitalize">{status}</span>
       </div>

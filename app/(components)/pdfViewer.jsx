@@ -60,22 +60,20 @@ const { RotateForwardButton, RotateBackwardButton } = rotatePluginInstance;
         })
         });
         const { lastPage,message } = await res.json();
-        if(!lastpage && !notified.current) { 
+        if(!lastPage && !notified.current) { 
           notify('You are not logged in! Progress won`t be saved!','error');
           setIsLoggedIn(false)
           setLastPage(0)
           setIsLoading(false)
           return notified.current=true 
         }
-        console.log('lastPage',lastPage)
         if (!notified.current && message) {
           notify(message, 'success');
-        setIsLoggedIn(true)
+          setIsLoggedIn(true)
           notified.current = true;
         }
         if (typeof lastPage === 'number') {
           setLastPage(lastPage-1)
-          console.log('lastpage',lastpage)
         }
         setIsLoading(false)
         } catch (err) {
@@ -98,7 +96,6 @@ const { RotateForwardButton, RotateBackwardButton } = rotatePluginInstance;
       })
       const data = await res.json();
       if(data.error) return console.log(data.error);
-      console.log(data)
   }  
 
 useEffect(() => {
@@ -122,7 +119,6 @@ useEffect(() => {
     return setPageState("hide")
 
   }
-  console.log("page",currentPage)
 
   return (
 <div className="flex h-screen bg-gray-100">

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 export function middleware(req){
-    console.log("New Request incoming:");
     const isLoggedInMan = req.cookies.get('token')?.value;
     const isLoggedInAuth = req.cookies.get('next-auth.session-token')?.value || req.cookies.get('__Secure-next-auth.session-token')?.value ;
     const pathname = req.nextUrl.pathname;

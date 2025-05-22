@@ -37,6 +37,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-toastify": "^11.0.5",
+    "tailwind-scrollbar": "^4.0.2",
+    "vercel": "^42.1.1",
     "whatwg-url": "^14.2.0",
     "yallist": "^5.0.0"
   },

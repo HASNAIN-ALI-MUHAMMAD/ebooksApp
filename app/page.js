@@ -9,8 +9,10 @@ import Layout from "./(components)/topbar";
 import { AArrowUp } from "lucide-react";
 import { AArrowDown } from "lucide-react";
 import { BookCardSkeleton } from "./(components)/bookcard";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const [booksData,setBooksData] = useState([]);
   const [books,setBooks] = useState([]);
   const [search,setSearch] = useState("");
@@ -48,7 +50,7 @@ export default function Home() {
   useEffect(()=>{
     setIsLoading(true);
     async function getBooks() {
-      const response = await fetch("http://localhost:3000/api/booksdata",{
+      const response = await fetch("/api/booksdata",{
         method:'GET',
         next:{
           revalidate:60*10
@@ -118,18 +120,22 @@ export default function Home() {
   },[currentPage,debouncedSearch,pages])
   if(error){
     return(
-      <div className="flex felx-col justify-center items-center min-h-screen py-2 text-center">
-        <p className="text-red-500 text-3xl">{error}</p>
+      <div className="flex flex-col justify-center items-center min-h-screen py-2 text-center">
+        <div className="w-full">
+          <Layout/>
+        </div>
+        <p className="text-red-500 text-3xl">Network error!</p>
+        <button onClick={()=>router.reload()} className="w-max text-gray-900 p-1.5  rounded-md bg-gray-100 text-sm hover:bg-gray-400 transition">Try Again!</button>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col flex-grow min-h-screen " id="topofthepage">
-      <div className="w-full">
-        <Layout/>
-      </div>
-      <div className="flex flex-col justify-center items-center gap-2 mt-16">
+        <div className="w-full">
+          <Layout/>
+        </div>
+      <div className="flex flex-col justify-center items-center gap-2 mt-24">
         <input type="text" placeholder="Search books..." className="w-60 lg:w-96 hover:bg-gray-200 hover:transition transition focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
       {books.length>50 && <Link href={'#bottomofthepage'} className="w-max text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100"><AArrowDown/></Link>}
         {(books && !isLoading) && <p>{books.length} books found!</p>}

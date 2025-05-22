@@ -13,10 +13,9 @@ export async function GET(request) {
     try{
         const user = await userData();
         const userId = user?.id || user?.userId;
-        console.log('userid',userId)
         const userBooks = await books.find({ userId: userId });
         const publicBooks = await Ebook.find({ userId: userId });
-        if((!userBooks || userBooks.length==0) && (!publicBooks || publicBooks.length == 0)) return NextResponse.json({error: "No books found!"});
+        if((!userBooks || userBooks.length==0) && (!publicBooks || publicBooks.length == 0)) return NextResponse.json({error: "No files found!"});
         const allBooks = [...userBooks, ...publicBooks];
         return NextResponse.json({allBooks});
     }

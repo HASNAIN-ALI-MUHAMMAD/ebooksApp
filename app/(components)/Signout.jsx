@@ -2,7 +2,9 @@ import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-export default function Signout() { 
+import { LogOut } from "lucide-react";
+import clsx from "clsx";
+export default function Signout({isIconOnly}) { 
   const router = useRouter();
     const [error,setError] = useState(null);
     const [message,setMessage] = useState(null);
@@ -27,11 +29,12 @@ export default function Signout() {
   }
 
   return (
-    <>
-      <button onClick={handleSignOut} className="w-max text-center p-2 rounded-md bg-gray-100 hover:bg-gray-300">Signout</button>
-      {error && <p>{error}</p>}
-      {message && <p>{message}</p>}
-
-    </>
+    <button onClick={handleSignOut} className={clsx(
+        "w-full flex items-center text-left px-3 py-2.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700",
+        isIconOnly && "justify-center !px-0"
+    )}>
+      <LogOut size={18} className={clsx(!isIconOnly && "mr-3")} />
+      {!isIconOnly && <span>Sign Out</span>}
+    </button>
   );
 }

@@ -1,181 +1,183 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link';
-import { Menu } from 'lucide-react'
+import { Menu, X, User, UploadCloud, Bookmark, LogOut } from 'lucide-react'
 import Signout from '../../(components)/Signout'
-import Layout from '../../(components)/topbar';
-import Image from 'next/image';
-import { ToastContainer,toast,Zoom } from 'react-toastify';
-import UserBookCard from '@/app/(components)/userbookscard';
-import UserProfile from '@/app/(components)/userProfile';
-import { BookCardSkeleton } from '@/app/(components)/bookcard';
+import TopbarLayout from '../../(components)/topbar'; 
+import { ToastContainer, toast, Zoom } from 'react-toastify';
+import UserProfile from '@/app/(components)/dashProfile';
+import Uploads from '@/app/(components)/dashUploads';
+
 
 export default function Dashboard() {
-  const [user,setUser] = useState({});
-  const [mainState,setMainState] = useState(localStorage.getItem('state'))
-  const [state,setState] = useState('unclicked')
-  const [loading,setLoading] = useState(true)
-  const [error,setError] = useState(null)
-  const [userData,setUserData] = useState([]);
-  const [books,setBooks] = useState([]);
+  const [mainState, setMainState] = useState('profile');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false); 
 
-  const notify = (mess,typ)=>toast(mess,{
-          theme:"light",
-          transition:Zoom,
-          hideProgressBar:true,
-          autoClose:3000,
-          type:typ
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [userData, setUserData] = useState({});
+
+  const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+  };
+  
+  const handleResize = useCallback(() => {
+    const desktop = window.innerWidth >= 768;
+    setIsDesktop(desktop);
+    if (desktop) {
+      setSidebarOpen(true); 
+    } else {
+      setSidebarOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleResize();
+    const debouncedHandleResize = debounce(handleResize, 250);
+    window.addEventListener('resize', debouncedHandleResize);
+    return () => window.removeEventListener('resize', debouncedHandleResize);
+  }, [handleResize]);
+
+
+  const notify = (mess, typ) => toast(mess, {
+    theme: "light", transition: Zoom, hideProgressBar: true, autoClose: 3000, type: typ
+  });
+
+  useEffect(() => {
+    async function getUser() {
+      setLoadingProfile(true);
+      try {
+        const res = await fetch('/api/userdata', {
+          method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.error) {
+          notify(data.error, 'error'); setUserData({});
+        } else {
+          setUserData(data.user || {});
+        }
+      } catch (error) {
+        notify('Failed to fetch user data', 'error'); setUserData({});
+      } finally {
+        setLoadingProfile(false);
       }
-      );
-
-  useEffect(()=>{
-    setLoading(true)
-    async function getUser(){
-      const res = await fetch('/api/userdata',{
-        method:'GET',
-        headers:{
-          'Content-Type':'application/json'
-        },
-        credentials:'include',
-        cache:'force-cache',
-        revalidate:'60*5'
-      }
-      );
-      const data = await res.json();
-      setLoading(false)
-      setUserData(data.user)
-      console.log(data.user)
     }
-    getUser()
-},[])
-  useEffect(()=>{
-    setLoading(true)
-    async function getBooks(){
-      const res = await fetch('/api/userbooks',{
-        method:'GET',
-        next:{revalidate:60},
-      });
-      const data = await res.json();
-      if(data.error) {
-        return notify(data.error,'error')
-      }
-      setLoading(false)
-      setBooks(data.allBooks)
-      console.log(data.allBooks)
-    }
-    if(mainState=='uploaded'){
-      getBooks()
-      console.log('books state',books)
-    }
+    getUser();
+  }, []);
 
-  },[mainState])
+  const handleSidebarToggle = () => setSidebarOpen(!sidebarOpen);
 
-  const handleClick = ()=>{
-    if(state == "clicked"){
-      return setState('unclicked')
+  const handleNavClick = (newState) => {
+    setMainState(newState);
+    localStorage.setItem('dashboard_main_state', newState);
+    if (!isDesktop) { 
+      setSidebarOpen(false);
     }
-    return setState('clicked')
-  }
+  };
 
+  const TOPBAR_HEIGHT_MOBILE = '52px'; 
+  const TOPBAR_HEIGHT_DESKTOP = '60px'; 
 
   return (
-    <div className='flex'>
-      <Layout/>
-      <ToastContainer/>
-      <div className={clsx('flex mt-10 flex-col float-left h-screen p-2 rounded-md transition',state == "clicked" ? 'w-max' : 'w-1/7')}>
-        <div className={clsx('flex flex-col border-1 border-gray-100 w-1/1 rounded-md transition',state == 'clicked' ? ' h-screen':'')}>
-          <button onClick={handleClick} className='p-2 w-max text-center'><Menu className='hover:text-gray-700'/></button>
-          {
-            state == "clicked" && 
-            <div className={clsx(state == 'clicked' ? 'flex flex-col gap-10':'')}>
-              <Link href={'#'} onClick={()=>{
-                setMainState('profile');
-                 localStorage.setItem("state",'profile')
-                }} className="w-full text-center rounded-md p-1 text-sm bg-gray-100 hover:bg-gray-300">Pr</Link>  
-              <Link href={'#'} onClick={()=>{
-                setMainState('uploaded')
-                 localStorage.setItem("state",'uploaded')
-                }} className="w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300 text-sm">Up</Link>  
-              <Link href={'#'} onClick={()=>{
-                setMainState('saved')
-                 localStorage.setItem("state",'saved')
-                }} className="w-full text-center p-1  rounded-md bg-gray-100 hover:bg-gray-300 text-sm">Sv</Link>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <TopbarLayout />
+      <ToastContainer position="top-center"/>
 
-            </div>  
-          }
-        </div>
-        <div className={clsx('flex flex-col border-1 border-gray-100 w-1/1 transition h-screen transition gap-10',state == "clicked" ? 'hidden' : 'flex flex-col')}>
-          <Link href={'#'}  onClick={()=>{
-                setMainState('profile');
-                 localStorage.setItem("state",'profile')
-                }} className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'profile' ? 'bg-gray-300':'')}>Profile</Link>  
-          <Link href={'#'} onClick={()=>{
-                setMainState('uploaded')
-                 localStorage.setItem("state",'uploaded')
-                }}  className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'uploaded' ? 'bg-gray-300':'')}>Uploaded books</Link>  
-          <Link href={'#'} onClick={()=>{
-                setMainState('saved')
-                 localStorage.setItem("state",'saved')
-                }} className={clsx("w-full text-center p-1 rounded-md bg-gray-100 hover:bg-gray-300",mainState == 'saved' ? 'bg-gray-300':'')}>Saved books</Link>  
-              <div>
-                <Signout/>
-              </div>
+      <div className="flex flex-1" style={{ paddingTop: isDesktop ? TOPBAR_HEIGHT_DESKTOP : TOPBAR_HEIGHT_MOBILE }}>
+        {!isDesktop && (
+          <button
+            onClick={handleSidebarToggle}
+            className="fixed p-2 text-gray-700 bg-white rounded-md shadow-md"
+            style={{ top: `calc(${TOPBAR_HEIGHT_MOBILE} + 10px)`, left: '10px', zIndex: 45 }} 
+            aria-label="Toggle sidebar"
+          >
+            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        )}
 
-        </div>
+        <aside
+          className={clsx(
+            'fixed md:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out print:hidden',
+            'overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100',
+            `md:pt-0 pt-[${TOPBAR_HEIGHT_MOBILE}]`,
+            isDesktop
+              ? (sidebarOpen ? 'w-60 lg:w-64' : 'w-20') 
+              : (sidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full')
+          )}
+          style={isDesktop ? { top: TOPBAR_HEIGHT_DESKTOP } : { top: 0, height: '100vh' }} 
+        >
+          <div className={clsx(
+            "flex items-center p-3 border-b border-gray-200",
+            sidebarOpen && isDesktop ? "justify-end" : "justify-center",
+            !isDesktop && "justify-between" 
+          )}>
+            {!isDesktop && sidebarOpen && <span className="font-semibold text-lg">Menu</span>}
+            <button
+              onClick={handleSidebarToggle}
+              className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+            >
+              {isDesktop ? <Menu size={22} /> : (sidebarOpen ? <X size={22} /> : <Menu size={22} />) }
+            </button>
+          </div>
+
+          <nav className="flex-1 px-2 py-3 space-y-1.5">
+            {[
+              { name: 'Profile', state: 'profile', icon: User },
+              { name: 'Uploaded Books', state: 'uploaded', icon: UploadCloud },
+            ].map((item) => (
+              <Link
+                key={item.name}
+                href="#"
+                onClick={() => handleNavClick(item.state)}
+                title={item.name}
+                className={clsx(
+                  "flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
+                  "hover:bg-gray-100 hover:text-gray-900",
+                  mainState === item.state ? 'bg-gray-200 text-gray-900' : 'text-gray-700',
+                  !sidebarOpen && isDesktop && "justify-center" 
+                )}
+              >
+                <item.icon size={18} className={clsx( (sidebarOpen || !isDesktop) && "mr-3" )} />
+                {(sidebarOpen || !isDesktop) && <span>{item.name}</span>}
+              </Link>
+            ))}
+          </nav>
+
+          <div className={clsx("px-2 py-3 mt-auto border-t border-gray-200", !sidebarOpen && isDesktop && "px-0")}>
+            <Signout isIconOnly={!sidebarOpen && isDesktop} />
+          </div>
+        </aside>
+
+        <main
+          className={clsx(
+            'flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-white md:bg-gray-50',
+            'transition-all duration-300 ease-in-out',
+            isDesktop && (sidebarOpen ? 'md:ml-10 lg:ml-14' : 'md:ml-14')
+          )}
+        >
+          {mainState === "profile" && (
+            <div className='w-full'>
+              {loadingProfile ? <p>Loading Profile...</p> :
+               userData?.email ? <UserProfile userData={userData} /> : <p>User data not available.</p>
+              }
+            </div>
+          )}
+          {mainState === "uploaded" && <Uploads />}
+        </main>
+
+        {!isDesktop && sidebarOpen && (
+          <div
+            onClick={handleSidebarToggle}
+            className="fixed inset-0 z-30 bg-black opacity-50"
+          ></div>
+        )}
       </div>
-      
-      <div className={clsx('flex flex-col border-1 border-gray-200  mt-12 rounded-md float-right h-screen',state == "clicked" ? 'w-1/1 transition' : 'w-6/7')}>
-            {
-              mainState == "profile" && 
-              <div className='flex flex-col justify-center items-center w-full h-full'>
-                <div>
-                      <h2>Profile</h2>
-                      <div>
-                        {/* {userData?.image ? <Image src={userData?.image} width={50} height={50} alt="user" /> :''}
-                        <h1>Email: {userData.email}</h1>
-                        <h1>Name: {userData.name}</h1> */}
-                        {
-                          userData && userData.email ? 
-                        <UserProfile userData={userData}/>: 'Loading...'
-
-                        }
-
-                      </div>
-                </div>
-              </div>
-            }
-            {
-              mainState == "saved" &&
-              <div>
-                <p>No saved books</p>
-              </div>
-            }
-            {
-              mainState == "uploaded" &&
-              <div className='flex flex-col items-center gap-10 w-full h-full p-2'>
-                <h2>Uploaded books</h2>
-                <div className='flex flex-row flex-wrap  w-full p-2'>
-                  { loading ? 
-                  <div className='flex flex-row flex-wrap  w-full p-2'>
-                    <BookCardSkeleton/>
-                    <BookCardSkeleton/>
-                    <BookCardSkeleton/>
-                    <BookCardSkeleton/>
-                  </div>:
-                    books.map((book,index)=>(
-                        <UserBookCard key={index} book={book}/>
-                    ))
-                  }
-
-                </div>
-              </div>
-
-}
-            
-      </div>
-      
     </div>
-
-  )
+  );
 }
