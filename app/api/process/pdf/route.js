@@ -1,39 +1,44 @@
-import * as pdfjs from 'pdfjs-dist/legacy/build/pdf';
-import { promises as fs } from 'fs';
-import path from 'path';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
 
-const workerPath = path.join(process.cwd(), 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.js');
-pdfjs.GlobalWorkerOptions.workerSrc = workerPath;
+if (typeof window === 'undefined') {
+    try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.js');
+    } catch (error) {
+        console.error("Failed to resolve pdf.worker.js for pdfjs-dist. PDF processing may be impaired.", error);
+    }
+}
 
 export const runtime = 'nodejs';
 
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    console.log(formData)
     const file = formData.get('file');
-    
     
     if (!file) {
       return Response.json({ error: 'No file provided' }, { status: 400 });
     }
+
     const bytes = await file.arrayBuffer();
-    const loadingTask = pdfjs.getDocument(bytes);
+    const loadingTask = pdfjsLib.getDocument({ data: bytes });
     const pdf = await loadingTask.promise;
     
     let fullText = '';
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
-      fullText += textContent.items.map(item => item.str).join(' ') + '\n\n';
+      fullText += textContent.items.filter(item => typeof item.str === 'string').map(item => item.str).join(' ') + '\n\n';
     }
+
     return Response.json({ 
-      text: fullText
+      text: fullText.trim()
     });
+
   } catch (error) {
-    console.error('PDF processing error:', error);
+    console.error('PDF processing error in API route:', error);
     return Response.json({ 
-      error: error.message,
+      error: 'Failed to process PDF.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 });
   }

@@ -52,7 +52,7 @@ export async function POST(req){
   const bookId = body.get("bookId");
   const status = body.get("status");
   console.log(status)
-  const link_pdf = `http://localhost:3000/pdfreader/${bookId}`;
+  const link_pdf = `https://ebooks-app-mu.vercel.app/pdfreader/${bookId}`;
   await connectMongo();
   const privateBook = await books.findOne({
     title: title,
