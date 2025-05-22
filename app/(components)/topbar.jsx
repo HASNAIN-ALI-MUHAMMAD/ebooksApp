@@ -73,7 +73,7 @@ export default function TopbarLayout() {
                     </div>
 
                     <nav className="hidden md:flex items-center space-x-2 md:space-x-3 lg:space-x-4">
-                        {user.email ? (
+                        {user ? (
                             <>
                                 <Link href={'/dashboard'} onClick={handleLinkState} className={navLinkClasses('/dashboard')}>
                                     Dashboard
@@ -89,7 +89,7 @@ export default function TopbarLayout() {
                         )}
                     </nav>
 
-                    {user.email && (
+                    {user && (
                         <div className="hidden md:flex items-center ml-auto md:ml-4"> 
                              <Link href={'/dashboard'} onClick={handleLinkState} className={userProfileLinkClasses}>
                                 <Image 
@@ -101,7 +101,7 @@ export default function TopbarLayout() {
                     )}
 
                     <div className="md:hidden flex items-center">
-                        {user.email && (
+                        {user && (
                             <Link href={'/dashboard'} onClick={handleLinkState} className="mr-2 p-1">
                                 <Image src={"/user.jpeg"} alt="User" width={28} height={28} className="rounded-full"/>
                             </Link>

@@ -13,6 +13,9 @@ export async function GET(req) {
         }
         const cookie = await cookies();
         const token = await cookie?.get('token')?.value;
+        if(!token){
+        return NextResponse.json({ error: "You are not logged in!"});
+        }
         const data =await jwt.verify(token,process.env.NEXTAUTH_SECRET)
         if(token){
             return NextResponse.json({ user:data});
