@@ -38,7 +38,6 @@ export async function  POST(req) {
         try{
             if(!fileId) return NextResponse.json({success:false,error:'No file rendered!'});
             const user = await userData();
-            console.log(user)
             if(!user) return NextResponse.json({success:false,error:'Not logged in!'});
             const userId = user.id;
             const bookIs = await booksprogress.findOne({userId:userId,fileId:fileId});
