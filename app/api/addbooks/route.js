@@ -2,13 +2,18 @@ import Ebook from "../lib/collections/ebooks.js";
 import { connectMongo } from "../lib/mongoose.js";
 import { NextResponse } from "next/server.js";
 import path from "path";
-import { supabase } from "./(supabase)/supabase.js"
 import fs from "fs/promises";
 import books from '../lib/collections/userBooks.js';
 import { cookies } from "next/headers.js";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth.config.js";
 import jwt from "jsonwebtoken";
+import { createClient } from "@supabase/supabase-js";
+
+export const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 
 export const userData = async ()=>{
