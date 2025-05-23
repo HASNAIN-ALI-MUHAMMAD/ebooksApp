@@ -1,179 +1,274 @@
 'use client'
-import Image from "next/image";
-import BookCard from "./(components)/bookcard";
-import { useState,useEffect } from "react";
+import BookCard, { BookCardSkeleton } from "./(components)/bookcard";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useDebounce } from "./(components)/debounce";
 import clsx from "clsx";
 import Layout from "./(components)/topbar";
-import { AArrowUp } from "lucide-react";
-import { AArrowDown } from "lucide-react";
-import { BookCardSkeleton } from "./(components)/bookcard";
+import { AArrowUp, AArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-  const [booksData,setBooksData] = useState([]);
-  const [books,setBooks] = useState([]);
-  const [search,setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 200);
-  const [message,setMessage] = useState(null);
-  const [isLoading,setIsLoading] = useState(true);
-  const [pageNumber,setPageNumber] = useState(0);
-  const [pagesBooks,setPagesBooks] = useState([]);
-  const [pages,setpages] = useState([]);
-  const [currentPage,setCurrentPage] = useState(1);
-  const [startIndex,setStartIndex] = useState(0);
-  const [endIndex,setEndIndex] = useState(50);
-  const [error,setError]  =useState(null);
-
+  const [booksData, setBooksData] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [message, setMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pagesBooks, setPagesBooks] = useState([]);
+  const [pages, setPages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [startIndex, setStartIndex] = useState(0);
+  const [endIndex, setEndIndex] = useState(50);
+  const [error, setError] = useState(null);
+  const [booksViewStatus,setBooksViewStatus] = useState('public');
+  const [fetchBooksUrl,setfetchBooksUrl] = useState('/api/booksdata')
+  const [user,setUser]  =useState([]);
   useEffect(()=>{
-    const total = Math.ceil(books.length)/50;
-    const arr = [];
-
-    for(let i=1;i<=total+1;i++){
-      arr.push(i);
-    }    
-    setpages(arr)
-
-  },[books,currentPage])
-  console.log(pages)
-  const handlePageChange = (e)=>{
-    const newPage =parseInt(e.target.value)
-    setCurrentPage(newPage)
-    setStartIndex(((newPage-1)*50));
-    return setEndIndex((newPage*50))
-
-  }
-
-
-  useEffect(()=>{
-    setIsLoading(true);
-    async function getBooks() {
-      const response = await fetch("/api/booksdata",{
+    async function userdata() {
+      const res = await fetch('/api/userdata',{
         method:'GET',
-        next:{
-          revalidate:60*10
-        },
-        headers: {
-          'Content-Type': 'application/json',
-        }
-        
+        credentials:'include'
       });
-      if(!response.ok) return setError("Error while fetching book data.")
-      const data = await response.json();
-      console.log(data)
-      if(data.error) return setError(data.message);
-      if (!Array.isArray(data.message)) {
-        setError("Invalid book data format.");
-        return;
+      const data = res.json();
+      if(data.error) return setUser(null);
+      if(res.ok && data?.user){
+          setUser(data.user);
+          return;
       }
-      setBooksData(data.message);
-      setBooks(data.message)
-      setIsLoading(false)
-    }
-    getBooks();
-},[])
-
-  const handlechange = (e) => {
-    setSearch(e.target.value);
-  }
-
-
-  useEffect(()=>{
-    if(search.length == 0){
-      setBooks(booksData);
       return;
     }
-    if(debouncedSearch.length > 0){
-      const filteredBooks = booksData.filter((book) => {
-        return book.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                book.author.toLowerCase().includes(debouncedSearch.toLowerCase())})
-      setBooks(filteredBooks);
-      setPagesBooks(filteredBooks);
-      if(books.length == 0 && debouncedSearch.length>0){
-        return setMessage("No books found...");
+    userdata()
+  },[])
+
+  useEffect(() => {
+    const total = Math.ceil(books.length / 50);
+    const arr = [];
+    if (books.length > 0) {
+      for (let i = 1; i <= Math.max(1, total); i++) {
+        arr.push(i);
       }
-      setMessage(null);
-      return
     }
+    setPages(arr);
+  }, [books]);
 
-  },[debouncedSearch,booksData,search,books.length])
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    setStartIndex((newPage - 1) * 50);
+    setEndIndex(newPage * 50);
+  };
 
-  useEffect(()=>{
-    if(!books) return;
-    function filterPages(){
-      const filteredBooks = books.filter((book,index)=>{
-        return index >= startIndex && index < endIndex && book.title !== "Error"
-      })
-      setPagesBooks(filteredBooks);
+  useEffect(() => {
+    setIsLoading(true);
+    async function getBooks() {
+      try {
+        const response = await fetch(fetchBooksUrl, {
+          method: 'POST',
+          next: { revalidate: 60 * 10 },
+          headers: { 'Content-Type': 'application/json' },
+          body:JSON.stringify({
+            userId:user?.id || null
+          })
+        });
+        if (!response.ok) {
+          setError(`Error fetching book data: ${response.statusText}`);
+          setIsLoading(false);
+          return;
+        }
+        const data = await response.json();
+        if (data.error || !data.message) {
+          setError(data.error);
+          setIsLoading(false);
+          return;
+        }
+        if (!Array.isArray(data.message)) {
+          setError("Invalid book data format: Expected an array.");
+          setIsLoading(false);
+          return;
+        }
+        setBooksData(data.message);
+        setBooks(data.message);
+        setError(null);
+      } catch (e) {
+        setError("A network error occurred, or the server is unreachable.");
+        console.error("Fetch error:", e);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    filterPages()
-  },[books,startIndex,endIndex]);
+    getBooks();
+  }, [fetchBooksUrl]);
 
-
-  useEffect(()=>{
-    if(pages.includes(currentPage)) return;
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
     setCurrentPage(1);
     setStartIndex(0);
     setEndIndex(50);
-  },[currentPage,debouncedSearch,pages])
-  if(error){
-    return(
-      <div className="flex flex-col justify-center items-center min-h-screen py-2 text-center">
-        <div className="w-full">
-          <Layout/>
-        </div>
-        <p className="text-red-500 text-3xl">Network error!</p>
-        <button onClick={()=>router.reload()} className="w-max text-gray-900 p-1.5  rounded-md bg-gray-100 text-sm hover:bg-gray-400 transition">Try Again!</button>
+  };
+
+  useEffect(() => {
+    setMessage(null);
+    if (search.length === 0) {
+      setBooks(booksData);
+      return;
+    }
+    if (debouncedSearch.length > 0) {
+      const filteredBooks = booksData.filter((book) =>
+        book.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        (book.author && book.author.toLowerCase().includes(debouncedSearch.toLowerCase()))
+      );
+      setBooks(filteredBooks);
+      if (filteredBooks.length === 0) {
+        setMessage("No books found matching your search.");
+      }
+    }
+  }, [debouncedSearch, booksData, search]);
+
+  useEffect(() => {
+    if (!books) return;
+    const currentPagedBooks = books.slice(startIndex, endIndex).filter(book => book.title !== "Error");
+    setPagesBooks(currentPagedBooks);
+  }, [books, startIndex, endIndex]);
+
+  useEffect(() => {
+    if (pages.length > 0 && !pages.includes(currentPage)) {
+        setCurrentPage(1);
+        setStartIndex(0);
+        setEndIndex(50);
+    } else if (pages.length === 0 && books.length > 0) {
+        setCurrentPage(1);
+        setStartIndex(0);
+        setEndIndex(50);
+    }
+  }, [currentPage, pages, books.length]);
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Layout />
+        <main className="flex flex-col flex-grow justify-center items-center py-10 px-4 text-center">
+          <h2 className="text-red-600 text-3xl font-semibold mb-4">Oops! Something went wrong.</h2>
+          <p className="text-red-500 text-lg mb-6">{error}</p>
+          <button
+            onClick={() => router.refresh()}
+            className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          >
+            Try Again
+          </button>
+        </main>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="flex flex-col flex-grow min-h-screen " id="topofthepage">
-        <div className="w-full">
-          <Layout/>
+    <div className="flex mt-12 flex-col min-h-screen bg-white" id="topofthepage">
+      <Layout />
+
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8 flex flex-col items-center">
+          <input
+            type="text"
+            placeholder="Search by title or author..."
+            className="w-full max-w-lg px-4 py-3 border-2 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400"
+            value={search}
+            onChange={handleSearchChange}
+          />
         </div>
-      <div className="flex flex-col justify-center items-center gap-2 mt-24">
-        <input type="text" placeholder="Search books..." className="w-60 lg:w-96 hover:bg-gray-200 hover:transition transition focus:border-gray-500 focus:outline-none border-2 border-black p-2 rounded-lg" value={search} onChange={handlechange} />
-      {books.length>50 && <Link href={'#bottomofthepage'} className="w-max text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100"><AArrowDown/></Link>}
-        {(books && !isLoading) && <p>{books.length} books found!</p>}
 
-
-      </div>
-    <div className="flex gap-3 flex-wrap py-3 px-3">
-      {isLoading ?  <div className=" flex gap-3 w-full justify-center items-center gap-3 flex-wrap py-3 items-center px-3 flex-wrap">
-          <BookCardSkeleton/>
-          <BookCardSkeleton/>
-          <BookCardSkeleton/>
-          <BookCardSkeleton/>
-          <BookCardSkeleton/>
-          <BookCardSkeleton/>
-          <BookCardSkeleton/>
-        </div> :
-        pagesBooks.map((book,index) => {
-          return (
-          <BookCard key={book._id} author={book.author} title={book.title} link_epub={book.link_epub} link_pdf={book.link_pdf}>
-          </BookCard>
-        )})
-      }
-      {message&& <><p className="text-center text-3xl">{message}</p></>}
-    </div>
-      <div id="bottomofthepage">
-        {
-          books.length<=50? null:pages.map(page=>{
-            return <button key={page} className={clsx(
-              "w-10 py-3 bg-gray-300 hover:bg-gray-100",
-              currentPage==page && "bg-gray-500"
-            )} onClick={handlePageChange} value={page}>{page}</button>
-        })}
+        <div className="mb-6 flex flex-wrap items-center justify-start gap-2 sm:gap-4">
+          <button
+            onClick={() => {
+            setBooksViewStatus("public");
+            setfetchBooksUrl('/api/booksdata')
+          }}
+            className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+          >
+            Public Books
+          </button>
+          <button
+            onClick={() => {
+              setBooksViewStatus("private");
+            setfetchBooksUrl('/api/booksdata/private')
+            }}
+            className="px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors"
+          >
+            Private Books
+          </button>
+        </div>
         
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-2">
+          {(books && !isLoading && !message) && (
+            <p className="text-md text-gray-700">
+              Showing {pagesBooks.length > 0 ? startIndex + 1 : 0}-
+              {Math.min(endIndex, books.length)} of {books.length} books found.
+            </p>
+          )}
+          {message && !isLoading && (
+            <p className="text-md text-orange-600">{message}</p>
+          )}
+          {(books.length > 50 && !isLoading) && (
+            <Link href={'#bottomofthepage'} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-600">
+              <AArrowDown size={20}/>
+            </Link>
+          )}
+        </div>
 
-      </div>
+        {isLoading ? (
+          <div className="flex flex-wrap justify-center sm:justify-start -mx-2">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="p-2 w-full md:w-1/2 lg:w-1/3">
+                <BookCardSkeleton />
+              </div>
+            ))}
+          </div>
+        ) : (
+          pagesBooks.length > 0 ? (
+            <div className="flex flex-wrap justify-center sm:justify-start -mx-2">
+              {pagesBooks.map((book) => (
+                <div key={book._id || book.title} className="p-2 w-full md:w-1/2 lg:w-1/3">
+                    <BookCard
+                    author={book.author}
+                    title={book.title}
+                    link_epub={book.link_epub}
+                    link_pdf={book.link_pdf}
+                    username={book?.username && book.username}
+                    />
+                </div>
+              ))}
+            </div>
+          ) : (
+            !message && <p className="text-center text-xl text-gray-500 py-10">No books to display currently.</p>
+          )
+        )}
+        
+        {!isLoading && books.length > 50 && pages.length > 1 && (
+          <div id="bottomofthepage" className="mt-10 flex flex-wrap justify-center items-center gap-2 py-4">
+            {pages.map(page => (
+              <button
+                key={page}
+                className={clsx(
+                  "px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-50",
+                  currentPage === page
+                    ? "bg-blue-600 text-white focus:ring-blue-500"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-400"
+                )}
+                onClick={() => handlePageChange(page)}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        )}
 
-        { books.length>50 &&<Link href={'#topofthepage'} className="w-max text-center p-1 rounded-lg bg-gray-300 hover:bg-gray-100 m-2"><AArrowUp/></Link>}
+        {books.length > 50 && !isLoading && (
+          <div className="mt-8 flex justify-end">
+            <Link href={'#topofthepage'} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-600">
+              <AArrowUp size={20}/>
+            </Link>
+          </div>
+        )}
+      </main>
     </div>
-
   );
 }

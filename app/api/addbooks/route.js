@@ -19,10 +19,7 @@ export const supabase = createClient(
 export const userData = async ()=>{
     const sessionUser = await getServerSession(authOptions);
     if(sessionUser) return sessionUser?.user;
-    const cookie = await cookies();
-    const token = await cookie?.get('token')?.value;
-    const manData =await jwt.verify(token,process.env.NEXTAUTH_SECRET)
-    return manData;
+    return null;
 
 }
 
@@ -30,6 +27,7 @@ export async function POST(req){
   await connectMongo();
     const user =await userData();
     const userId = user?.id || user?.userId;
+    const username = user?.name|| 'Anonymous'
     if(!user){
       return NextResponse.json('You are not logged in!')
     }
@@ -84,7 +82,8 @@ export async function POST(req){
         bookId,
         link_pdf,
         url_pdf: publicUrl.publicUrl,
-        status:status
+        status:status,
+        username:username
       });
       await saveUserBook.save();
   }catch(err){
@@ -101,7 +100,8 @@ export async function POST(req){
         bookId,
         link_pdf,
         url_pdf: publicUrl.publicUrl,
-        status:status
+        status:status,
+        username:username
       });
       await saveUserBook.save();
     }

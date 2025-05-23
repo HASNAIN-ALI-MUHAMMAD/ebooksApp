@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectMongo } from "../lib/mongoose";
 import Ebook from "../lib/collections/ebooks";
 
-export async function GET(req, res) {
+export async function POST(req, res) {
     try{
         await connectMongo();
         let ebooks = await Ebook.find({});
@@ -12,7 +12,5 @@ export async function GET(req, res) {
     catch(err){
         return NextResponse.json({ message: err.message,error:err,success:false })
     }
-
-
 
 }

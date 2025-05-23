@@ -115,7 +115,7 @@ function ActualLoginForm() {
                 setFormError(result.error || "Invalid code or login failed.");
             } else if (result?.ok) {
                 notify("Login successful!", 'success');
-                router.push(searchParams.get('callbackUrl') || "/dashboard");
+                router.push("/dashboard");
             } else {
                  setFormError("Login failed. Please try again.");
             }
@@ -129,7 +129,7 @@ function ActualLoginForm() {
     const handleOAuthSignIn = (provider) => {
         if (loading) return;
         setLoading(provider);
-        const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+        const callbackUrl = '/dashboard';
         signIn(provider, { callbackUrl });
     };
 
@@ -137,64 +137,10 @@ function ActualLoginForm() {
         <div className="flex flex-col items-center mt-10 md:mt-16 px-4 w-full">
             <div className="bg-white shadow-xl rounded-lg p-6 sm:p-8 w-full max-w-md">
                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Login or Sign Up</h2>
-                <form className="w-full space-y-4" onSubmit={(e) => e.preventDefault()}>
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input
-                            type="email" id="email" name="email"
-                            value={info.email} placeholder="you@example.com" required autoComplete="email"
-                            onChange={(e) => setInfo({ ...info, email: e.target.value, code: "" })} // Reset code on email change
-                            className="w-full h-11 border border-gray-300 rounded-md p-2.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
-                            disabled={!!loading || emailState === 'code'}
-                        />
-                    </div>
-
-                    {emailState === "valid" && (
-                        <button
-                            type="button" onClick={handleSendCode}
-                            className="w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70"
-                            disabled={loading === 'send_code'}
-                        >
-                            {loading === 'send_code' ? <CircularProgress color="inherit" size={20} /> : "Send Verification Code"}
-                        </button>
-                    )}
-
-                    {emailState === "code" && (
-                        <div className="space-y-4 pt-2">
-                            <p className="text-sm text-gray-600">A code was sent to <strong>{info.email}</strong>. Check your inbox (and spam folder).</p>
-                            <div>
-                                <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
-                                <input
-                                    type="text" inputMode="numeric" required id="code" name="code" placeholder="123456"
-                                    value={info.code} onChange={(e) => setInfo({ ...info, code: e.target.value })}
-                                    className="w-full h-11 border border-gray-300 rounded-md p-2.5 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100"
-                                    disabled={loading === 'submit_code'} autoComplete="one-time-code"
-                                />
-                            </div>
-                            <button
-                                type="button" onClick={handleSubmitCode}
-                                className="w-full flex justify-center items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70"
-                                disabled={loading === 'submit_code'}
-                            >
-                                {loading === 'submit_code' ? <CircularProgress color="inherit" size={20} /> : "Verify & Login"}
-                            </button>
-                        </div>
-                    )}
-                </form>
-
-                {emailState !== 'code' && (
-                    <>
-                        <div className="my-6 flex items-center w-full">
-                            <div className="flex-grow border-t border-gray-300"></div>
-                            <span className="flex-shrink mx-4 text-sm font-medium text-gray-500">OR</span>
-                            <div className="flex-grow border-t border-gray-300"></div>
-                        </div>
                         <div className="space-y-3">
                             <OAuthButton provider="github" loading={loading} onClick={() => handleOAuthSignIn("github")} label="Sign in with Github" icon={null /* Add Github icon component here */} />
                             <OAuthButton provider="google" loading={loading} onClick={() => handleOAuthSignIn("google")} label="Sign in with Google" icon={null /* Add Google icon component here */} />
                         </div>
-                    </>
-                )}
             </div>
         </div>
     );

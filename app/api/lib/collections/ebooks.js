@@ -11,6 +11,7 @@ const Ebook = mongoose.models.ebooksJSON ?? mongoose.model("ebooksJSON", new mon
     link_pdf:String,
     url_pdf:String,
     userId:String,
+    username:String,
     status:String,
     createdAt: {
         type: Date,
