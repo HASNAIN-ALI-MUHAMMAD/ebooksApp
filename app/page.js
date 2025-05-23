@@ -98,7 +98,7 @@ export default function Home() {
       if (Object.keys(bodyPayload).length > 0 || fetchBooksUrl.includes('/private')) {
           requestOptions.body = JSON.stringify(bodyPayload);
       } else if (fetchBooksUrl === '/api/booksdata') {
-          requestOptions.method = 'GET';
+          requestOptions.method = 'POST';
           delete requestOptions.body;
       }
 
@@ -195,7 +195,7 @@ export default function Home() {
     if (!user?.id) {
       setMessage("Please log in to view private books. You can also try refreshing the page if you recently logged in.");
       // router.push('/login');
-      
+
         }
     setBooksViewStatus("private");
     setFetchBooksUrl('/api/booksdata/private');
