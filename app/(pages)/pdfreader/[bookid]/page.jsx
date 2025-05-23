@@ -23,10 +23,11 @@ export default function PdfReader({params}) {
                 body:JSON.stringify({
                     bookid:bookid
                 }),
+                credentials:'include'
             });
             const data = await res.json();
-            setBook(data?.data[0])
-            setUrl(data?.data[0]?.url_pdf)
+            setBook(data?.data)
+            setUrl(data?.data?.url_pdf)
         }
         fetchUrl();
         setIsLoading(false);    
