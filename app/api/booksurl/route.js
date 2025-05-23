@@ -15,8 +15,7 @@ export async function POST(request) {
       const userBooks = await books.find({
         bookId: bookid,
       })
-      const data = await userBooks;
-      return NextResponse.json({ data: data });
+      return NextResponse.json({ data:userBooks });
     }
     const data = await book;
     return NextResponse.json({ data: data });

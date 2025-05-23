@@ -25,8 +25,8 @@ export default function PdfReader({params}) {
                 }),
             });
             const data = await res.json();
-            setBook(data.data[0])
-            setUrl(data.data[0].url_pdf)
+            setBook(data?.data[0])
+            setUrl(data?.data[0]?.url_pdf)
         }
         fetchUrl();
         setIsLoading(false);    
