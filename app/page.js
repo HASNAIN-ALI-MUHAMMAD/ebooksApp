@@ -26,6 +26,8 @@ export default function Home() {
   const [fetchBooksUrl, setFetchBooksUrl] = useState('/api/booksdata');
   const [user, setUser] = useState(null);
 
+
+  // fetching user data
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -49,8 +51,9 @@ export default function Home() {
       }
     }
     fetchUserData();
-  }, []);
+  }, [booksViewStatus,fetchBooksUrl]);
 
+  // setting books for each page
   useEffect(() => {
     const total = Math.ceil(books.length / 50);
     const arr = [];
@@ -62,11 +65,15 @@ export default function Home() {
     setPages(arr);
   }, [books]);
 
+  // handling page change function
+
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     setStartIndex((newPage - 1) * 50);
     setEndIndex(newPage * 50);
   };
+
+  // main books fetching function
 
   useEffect(() => {
     setIsLoading(true);
@@ -113,8 +120,8 @@ export default function Home() {
           return;
         }
         
-        if (data.error || !data.message) {
-          setError(data.message || data.error || "Failed to parse book data.");
+        if (data.error) {
+          setError(data.error || "Failed to parse book data.");
           setBooks([]);
           setBooksData([]);
           setIsLoading(false);
@@ -137,8 +144,9 @@ export default function Home() {
       }
     }
     getBooks();
-  }, [fetchBooksUrl, user?.id]);
+  }, [fetchBooksUrl, user?.id,booksViewStatus]);
 
+  // handling search
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
     setCurrentPage(1);
@@ -146,6 +154,8 @@ export default function Home() {
     setEndIndex(50);
   };
 
+
+  // the books filter based on search
   useEffect(() => {
     setMessage(null);
     if (!booksData) return;
@@ -165,11 +175,14 @@ export default function Home() {
 
   }, [debouncedSearch, booksData]);
 
+  //removing books with no titles
   useEffect(() => {
     if (!books) return;
     const currentPagedBooks = books.slice(startIndex, endIndex).filter(book => book.title !== "Error");
     setPagesBooks(currentPagedBooks);
   }, [books, startIndex, endIndex]);
+
+  //setting first page and books per page
 
   useEffect(() => {
     if (pages.length > 0 && !pages.includes(currentPage)) {
@@ -183,21 +196,22 @@ export default function Home() {
     }
   }, [currentPage, pages, books.length]);
 
-
+  
+  // handling private and public books change
   const handlePublicBooksClick = () => {
     setBooksViewStatus("public");
     setFetchBooksUrl('/api/booksdata');
     setCurrentPage(1);
     setSearch("");
   };
-
+// private
   const handlePrivateBooksClick = () => {
-    setBooksViewStatus("private");
     if (!user?.id) {
       setMessage("Please log in to view private books");
       router.push('/login');
       return
         }
+    setBooksViewStatus("private");
     setFetchBooksUrl('/api/booksdata/private');
     setCurrentPage(1);
     setSearch("");
