@@ -22,25 +22,34 @@ export default function Home() {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(50);
   const [error, setError] = useState(null);
-  const [booksViewStatus,setBooksViewStatus] = useState('public');
-  const [fetchBooksUrl,setfetchBooksUrl] = useState('/api/booksdata')
-  const [user,setUser]  =useState([]);
-  useEffect(()=>{
-    async function userdata() {
-      const res = await fetch('/api/userdata',{
-        method:'GET',
-        credentials:'include'
-      });
-      const data = res.json();
-      if(data.error) return setUser(null);
-      if(res.ok && data?.user){
-          setUser(data.user);
+  const [booksViewStatus, setBooksViewStatus] = useState('public');
+  const [fetchBooksUrl, setFetchBooksUrl] = useState('/api/booksdata');
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const res = await fetch('/api/userdata', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          setUser(null);
           return;
+        }
+        if (data?.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error("Exception fetching user data:", err);
+        setUser(null);
       }
-      return;
     }
-    userdata()
-  },[])
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const total = Math.ceil(books.length / 50);
@@ -61,35 +70,65 @@ export default function Home() {
 
   useEffect(() => {
     setIsLoading(true);
+    setError(null); 
+    setMessage(null);
+
     async function getBooks() {
+      const isPrivateFetch = fetchBooksUrl.includes('/private');
+
+      if (isPrivateFetch && !user?.id) {
+        setMessage("Please log in to view private books.");
+        setBooks([]);
+        setBooksData([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const requestOptions = {
+        method: 'POST', 
+        next: { revalidate: 60 * 10 },
+        headers: { 'Content-Type': 'application/json' },
+      };
+
+      const bodyPayload = {};
+      if (user?.id) { 
+        bodyPayload.userId = user.id;
+      }
+      
+      if (Object.keys(bodyPayload).length > 0 || fetchBooksUrl.includes('/private')) {
+          requestOptions.body = JSON.stringify(bodyPayload);
+      } else if (fetchBooksUrl === '/api/booksdata') {
+          requestOptions.method = 'GET';
+          delete requestOptions.body;
+      }
+
+
       try {
-        const response = await fetch(fetchBooksUrl, {
-          method: 'POST',
-          next: { revalidate: 60 * 10 },
-          headers: { 'Content-Type': 'application/json' },
-          body:JSON.stringify({
-            userId:user?.id || null
-          })
-        });
+        const response = await fetch(fetchBooksUrl, requestOptions);
+        const data = await response.json();
+
         if (!response.ok) {
-          setError(`Error fetching book data: ${response.statusText}`);
+          setError(data.message || data.error || `Error: ${response.statusText}`);
           setIsLoading(false);
           return;
         }
-        const data = await response.json();
+        
         if (data.error || !data.message) {
-          setError(data.error);
+          setError(data.message || data.error || "Failed to parse book data.");
+          setBooks([]);
+          setBooksData([]);
           setIsLoading(false);
           return;
         }
         if (!Array.isArray(data.message)) {
           setError("Invalid book data format: Expected an array.");
+          setBooks([]);
+          setBooksData([]);
           setIsLoading(false);
           return;
         }
         setBooksData(data.message);
         setBooks(data.message);
-        setError(null);
       } catch (e) {
         setError("A network error occurred, or the server is unreachable.");
         console.error("Fetch error:", e);
@@ -98,7 +137,7 @@ export default function Home() {
       }
     }
     getBooks();
-  }, [fetchBooksUrl]);
+  }, [fetchBooksUrl, user?.id]);
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
@@ -109,21 +148,22 @@ export default function Home() {
 
   useEffect(() => {
     setMessage(null);
-    if (search.length === 0) {
-      setBooks(booksData);
-      return;
-    }
+    if (!booksData) return;
+
+    let currentBooks = [...booksData]; 
+
     if (debouncedSearch.length > 0) {
-      const filteredBooks = booksData.filter((book) =>
+      currentBooks = booksData.filter((book) =>
         book.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         (book.author && book.author.toLowerCase().includes(debouncedSearch.toLowerCase()))
       );
-      setBooks(filteredBooks);
-      if (filteredBooks.length === 0) {
+      if (currentBooks.length === 0) {
         setMessage("No books found matching your search.");
       }
     }
-  }, [debouncedSearch, booksData, search]);
+    setBooks(currentBooks);
+
+  }, [debouncedSearch, booksData]);
 
   useEffect(() => {
     if (!books) return;
@@ -143,15 +183,40 @@ export default function Home() {
     }
   }, [currentPage, pages, books.length]);
 
-  if (error) {
+
+  const handlePublicBooksClick = () => {
+    setBooksViewStatus("public");
+    setFetchBooksUrl('/api/booksdata');
+    setCurrentPage(1);
+    setSearch("");
+  };
+
+  const handlePrivateBooksClick = () => {
+    if (!user?.id) {
+      setMessage("Please log in to view private books. You can also try refreshing the page if you recently logged in.");
+      // router.push('/login');
+      
+        }
+    setBooksViewStatus("private");
+    setFetchBooksUrl('/api/booksdata/private');
+    setCurrentPage(1);
+    setSearch("");
+  };
+
+
+  if (error && !isLoading) { 
     return (
       <div className="flex flex-col min-h-screen">
         <Layout />
         <main className="flex flex-col flex-grow justify-center items-center py-10 px-4 text-center">
           <h2 className="text-red-600 text-3xl font-semibold mb-4">Oops! Something went wrong.</h2>
-          <p className="text-red-500 text-lg mb-6">{error}</p>
+          <p className="text-red-500 text-lg mb-6">{typeof error === 'string' ? error : JSON.stringify(error)}</p>
           <button
-            onClick={() => router.refresh()}
+            onClick={() => {
+              setError(null); 
+              setFetchBooksUrl(prevUrl => prevUrl); 
+              if(prevUrl => prevUrl === '/api/booksdata/private' && !user?.id) fetchUserData();
+            }}
             className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
           >
             Try Again
@@ -178,36 +243,41 @@ export default function Home() {
 
         <div className="mb-6 flex flex-wrap items-center justify-start gap-2 sm:gap-4">
           <button
-            onClick={() => {
-            setBooksViewStatus("public");
-            setfetchBooksUrl('/api/booksdata')
-          }}
-            className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+            onClick={handlePublicBooksClick}
+            disabled={isLoading && fetchBooksUrl === '/api/booksdata'}
+            className={clsx(
+              "px-4 py-2 text-sm font-medium rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors",
+              booksViewStatus === 'public' ? "bg-blue-200 text-blue-800 ring-2 ring-blue-500" : "bg-blue-100 text-blue-700"
+            )}
           >
             Public Books
           </button>
           <button
-            onClick={() => {
-              setBooksViewStatus("private");
-            setfetchBooksUrl('/api/booksdata/private')
-            }}
-            className="px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors"
+            onClick={handlePrivateBooksClick}
+            disabled={isLoading && fetchBooksUrl.includes('/private')}
+            className={clsx(
+              "px-4 py-2 text-sm font-medium rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors",
+               booksViewStatus === 'private' ? "bg-green-200 text-green-800 ring-2 ring-green-500" : "bg-green-100 text-green-700"
+            )}
           >
             Private Books
           </button>
         </div>
         
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-2">
-          {(books && !isLoading && !message) && (
+          {(!isLoading && !message && !error && books) && (
             <p className="text-md text-gray-700">
               Showing {pagesBooks.length > 0 ? startIndex + 1 : 0}-
               {Math.min(endIndex, books.length)} of {books.length} books found.
             </p>
           )}
-          {message && !isLoading && (
+          {(message && !isLoading) && (
             <p className="text-md text-orange-600">{message}</p>
           )}
-          {(books.length > 50 && !isLoading) && (
+          {(error && !isLoading) && ( 
+             <p className="text-md text-red-500">Error: {typeof error === 'string' ? error : 'Could not load books.'}</p>
+          )}
+          {(books && books.length > 50 && !isLoading) && (
             <Link href={'#bottomofthepage'} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-600">
               <AArrowDown size={20}/>
             </Link>
@@ -232,17 +302,17 @@ export default function Home() {
                     title={book.title}
                     link_epub={book.link_epub}
                     link_pdf={book.link_pdf}
-                    username={book?.username && book.username}
+                    username={book?.username}
                     />
                 </div>
               ))}
             </div>
           ) : (
-            !message && <p className="text-center text-xl text-gray-500 py-10">No books to display currently.</p>
+            !message && !error && <p className="text-center text-xl text-gray-500 py-10">No books to display currently.</p>
           )
         )}
         
-        {!isLoading && books.length > 50 && pages.length > 1 && (
+        {!isLoading && books && books.length > 50 && pages.length > 1 && (
           <div id="bottomofthepage" className="mt-10 flex flex-wrap justify-center items-center gap-2 py-4">
             {pages.map(page => (
               <button
@@ -261,7 +331,7 @@ export default function Home() {
           </div>
         )}
 
-        {books.length > 50 && !isLoading && (
+        {books && books.length > 50 && !isLoading && (
           <div className="mt-8 flex justify-end">
             <Link href={'#topofthepage'} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-600">
               <AArrowUp size={20}/>

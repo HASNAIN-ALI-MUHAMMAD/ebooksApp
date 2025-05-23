@@ -1,16 +1,21 @@
 import { NextResponse } from "next/server";
 import { connectMongo } from "../lib/mongoose";
-import Ebook from "../lib/collections/ebooks";
+import Ebook from "../lib/collections/ebooks"; 
 
-export async function POST(req, res) {
-    try{
+export async function GET(req) {
+    try {
         await connectMongo();
-        let ebooks = await Ebook.find({});
-        const length = await ebooks.length;
-        return NextResponse.json({ message:ebooks,length,success:true})
-    }
-    catch(err){
-        return NextResponse.json({ message: err.message,error:err,success:false })
-    }
+        const ebooks = await Ebook.find({});
+        const count = ebooks.length; 
 
+        return NextResponse.json({ message: ebooks, length: count, success: true });
+
+    } catch (err) {
+        console.error("Error in GET /api/booksdata:", err);
+        return NextResponse.json({
+            message: "An error occurred while fetching public books.",
+            error: err.name || "ServerError", 
+            success: false
+        }, { status: 500 });
+    }
 }
