@@ -98,7 +98,7 @@ export default function Home() {
       if (Object.keys(bodyPayload).length > 0 || fetchBooksUrl.includes('/private')) {
           requestOptions.body = JSON.stringify(bodyPayload);
       } else if (fetchBooksUrl === '/api/booksdata') {
-          requestOptions.method = 'POST';
+          requestOptions.method = 'GET';
           delete requestOptions.body;
       }
 
@@ -192,12 +192,12 @@ export default function Home() {
   };
 
   const handlePrivateBooksClick = () => {
-    if (!user?.id) {
-      setMessage("Please log in to view private books. You can also try refreshing the page if you recently logged in.");
-      // router.push('/login');
-
-        }
     setBooksViewStatus("private");
+    if (!user?.id) {
+      setMessage("Please log in to view private books");
+      router.push('/login');
+      return
+        }
     setFetchBooksUrl('/api/booksdata/private');
     setCurrentPage(1);
     setSearch("");
@@ -265,7 +265,7 @@ export default function Home() {
         </div>
         
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-2">
-          {(!isLoading && !message && !error && books) && (
+          {(!isLoading && !message && !error && books.length!==0) && (
             <p className="text-md text-gray-700">
               Showing {pagesBooks.length > 0 ? startIndex + 1 : 0}-
               {Math.min(endIndex, books.length)} of {books.length} books found.
@@ -308,7 +308,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            !message && !error && <p className="text-center text-xl text-gray-500 py-10">No books to display currently.</p>
+            (!message && !error && books.length==0) && <p className="text-center text-xl text-gray-500 py-10">No books to display currently.</p>
           )
         )}
         

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectMongo } from "../lib/mongoose";
 import Ebook from "../lib/collections/ebooks"; 
 
-export async function POST(req) {
+export async function GET(req) {
     try {
         await connectMongo();
         const ebooks = await Ebook.find({});
