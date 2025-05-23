@@ -8,9 +8,9 @@ export async function POST(req) {
         await connectMongo();
         const ebooks = await Ebook.find({});
         const count = ebooks.length; 
-        const books = await books.find({});
-        const count2 = books.length;
-        const totalCount = count +count2;
+        const booksUser = await books.find({});
+        const count2 = booksUser.length;
+        const totalCount = count + count2;
 
         return NextResponse.json({ message: ebooks, length: totalCount, success: true });
 
