@@ -161,16 +161,19 @@ export default function AddBookPage() {
 
     const fetchBooksLength = async () => {
         try {
-            const res = await fetch('/api/booksdata');
+            const res = await fetch('/api/booksdata',{
+                method:'POST',
+                credentials:'include'
+            });
             const data = await res.json();
-            if (data && typeof data.length === 'number') {
+            if (data?.length) {
                 setBookLength(data.length);
             } else {
-                 setBookLength(0);unexpected
+                 setBookLength(0);
             }
         } catch (error) {
-            console.error("Failed to fetch books length:", error);
-            setBookLength(0);
+            notify("Failed to fetch books length:", 'error');
+            return;
         }
     };
 
