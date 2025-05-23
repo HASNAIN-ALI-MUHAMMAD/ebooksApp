@@ -105,7 +105,7 @@ export default function Home() {
       if (Object.keys(bodyPayload).length > 0 || fetchBooksUrl.includes('/private')) {
           requestOptions.body = JSON.stringify(bodyPayload);
       } else if (fetchBooksUrl === '/api/booksdata') {
-          requestOptions.method = 'GET';
+          requestOptions.method = 'POST';
           delete requestOptions.body;
       }
 
